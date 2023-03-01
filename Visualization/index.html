@@ -1,24 +1,11 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" class="w-full h-full m-0 p-2 overflow-hidden bg-zinc-900">
 
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title>Babylon Template</title>
 
-        <style>
-            html, body {
-                overflow: hidden;
-                width: 100%;
-                height: 100%;
-                margin: 0;
-                padding: 0;
-            }
-            #renderCanvas {
-                width: 100%;
-                height: 100%;
-                touch-action: none;
-            }
-        </style>
+        <script src="https://cdn.tailwindcss.com"></script>
 
         <script src="https://cdn.babylonjs.com/babylon.js"></script>
         <!-- <script src="https://cdn.babylonjs.com/babylon.max.js"></script> -->
@@ -40,33 +27,87 @@
         <!-- <script src="https://cdn.babylonjs.com/viewer/babylon.viewer.max.js"></script> -->
     </head>
 
-   <body>
+<body class="w-full h-full m-0 p-0 overflow-hidden rounded-md bg-stone-900">
 
-	<canvas id="renderCanvas"></canvas>
+    <div id="topbar" class="w-full text-white rounded-lg bg-stone-800 rounded-b-none grid place-items-center" style="height: 10%">
+        <div class="w-64 text-3xl font-bold font-mono">>NeuronSim</div>
+        <div class="w-128 text-xl">Morphology - Biophysics - Recording - Simulation</div>
+    </div>
+    <div class="flex w-full" style="height: 90%">
+        <div class="h-full m-4" style="width: 3%">
+            
+        </div>
+        <canvas id="renderCanvas" class="h-full p-2 bg-black rounded-lg" style="width: 70%"></canvas>
+        <div class="h-full p-2" style="width: 27%">
+        </div>
+    </div>
 
 	<script>
         const canvas = document.getElementById("renderCanvas");
         const engine = new BABYLON.Engine(canvas, true);
-        const createScene = function () {
-            const scene = new BABYLON.Scene(engine);
-          
-            const camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-            camera.setTarget(BABYLON.Vector3.Zero());
-            camera.attachControl(canvas, true);
 
-            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-            light.intensity = 0.7;
+        const scene = new BABYLON.Scene(engine);
+        scene.clearColor = new BABYLON.Color3(0.1,0.1,0.1);
 
-            const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
-           
-            return scene;
+        const camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, new BABYLON.Vector3(0, 0, 0));
+        // Positions the camera overwriting alpha, beta, radius
+        camera.setPosition(new BABYLON.Vector3(50, 20, 120));
+        camera.setTarget(BABYLON.Vector3.Zero());
+        camera.attachControl(canvas, true);
+
+        const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0));
+        light.intensity = 0.7;
+
+        const glow = new BABYLON.GlowLayer("glow");
+
+        var redMat = new BABYLON.StandardMaterial("redMat");
+        redMat.emissiveColor = new BABYLON.Color3(0.1, 0, 0);
+        
+        function geometry_callback(data) {
+            for (var segment_name in data) {
+                
+                var happy_data = [];
+                var point_data = data[segment_name];
+                for (var point in point_data) {
+                    let x = point_data[point][0];
+                    let y = point_data[point][1];
+                    let z = point_data[point][2];
+                    let vect = new BABYLON.Vector3(x,y,z);
+                    happy_data.push(vect);
+                }
+                let tube = BABYLON.MeshBuilder.CreateTube("tube", { path: happy_data });
+                tube.material = redMat;
+            }
         };
 
-        const scene = createScene();
+        const socket = new WebSocket('ws://localhost:8001');
+        socket.onmessage = (event) => {
+            data = event.data
+            try {
+                data = JSON.parse(data);
+                data = JSON.parse(data[0]);
+
+                switch (data.message) {
+                    case "GEO_DATA":
+                        console.log("data recieved");
+                        geometry_callback(data.data);
+                        break;
+                }
+            }
+            catch(err) {
+                debugger;
+            }
+        };
+        socket.onopen = (event) => {
+            socket.send(JSON.stringify({
+                message: "INIT", data: {}
+            }));
+        };
+
+
         engine.runRenderLoop(function () {
             scene.render();
         });
-
         window.addEventListener("resize", function () {
             engine.resize();
         });
