@@ -7,9 +7,9 @@
 
 <body class="w-full h-full m-0 p-0 overflow-hidden rounded-md bg-stone-900">
 
-    <div id="app-root" class="w-full h-full">
+    <div id="app-root" class="w-full h-full text-white">
 
-        <div id="topbar" class="w-full text-white rounded-lg bg-stone-800 rounded-b-none grid place-items-center" style="height: 10%">
+        <div id="topbar" class="w-full rounded-lg bg-stone-800 rounded-b-none grid place-items-center" style="height: 10%">
             <div class="w-64 text-3xl font-bold font-mono">>NeuronSim</div>
             <div class="w-128 text-xl">Morphology - Biophysics - Recording - Simulation</div>
         </div>
@@ -17,6 +17,8 @@
         <div class="flex w-full" style="height: 90%">
 
             <div id="left-sidebar" class="h-full" style="width: 20%">
+                {{State.Mode}}
+                {{State.Points}}
             </div>
 
             <canvas id="render-canvas" class="h-full bg-black rounded-lg" style="width: 60%"></canvas>
@@ -24,6 +26,7 @@
             <div id="right-sidebar" class="h-full" style="width: 20%">
             </div>
         </div>
+        
     </div>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -45,19 +48,30 @@
     <!-- <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.max.js"></script> -->
     <script src="https://cdn.babylonjs.com/viewer/babylon.viewer.js"></script>
     <!-- <script src="https://cdn.babylonjs.com/viewer/babylon.viewer.max.js"></script> -->
-    <script type="importmap">
-    {
-        "imports": {
-            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
-        }
-    }
+   
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
+    <script>
+        var App = new Vue({
+            el: '#app-root',
+            data() {
+                return { 
+                    State: 
+                    {
+                        Canvas: null,
+                        Engine: null,
+                        Scene: null,
+                        Mode: "View",
+                        Tubes: [],
+                        Points: [],
+                        RightDown: false
+                    }
+                }
+            },
+        });
+
     </script>
 
-    <script type="module">
-        import { createApp } from 'vue'
-        import UserInterface from './UserInterface.js'
-        createApp(UserInterface).mount('#app-root');
-    </script>
+    <script src="user-interface.js"></script>
 
 </body>
 </html>
