@@ -2,34 +2,82 @@
 <html xmlns="http://www.w3.org/1999/xhtml" class="w-full h-full m-0 p-2 overflow-hidden bg-zinc-900">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Babylon Template</title>
+    <title>Neuron Front End</title>
 </head>
 
 <body class="w-full h-full m-0 p-0 overflow-hidden rounded-md bg-stone-900">
-
     <div id="app-root" class="w-full h-full text-white">
 
         <div id="topbar" class="w-full rounded-lg bg-stone-800 rounded-b-none grid place-items-center" style="height: 10%">
             <div class="w-64 text-3xl font-bold font-mono">>NeuronSim</div>
-            <div class="w-128 text-xl">Morphology - Biophysics - Recording - Simulation</div>
+            <div class="w-128 text-xl">
+                <span>Morphology</span> - 
+                <span>Biophysics</span> - 
+                <span>Recording</span> - 
+                <span>Simulation</span>
+            </div>
         </div>
 
         <div class="flex w-full" style="height: 90%">
+            <div id="left-sidebar" class="h-full m-4" style="width: 25%">
+                <!-- New Cell: -->
+                <button class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-1 px-2 rounded"
+                    @click="NewSegment()">
+                    New Segment
+                </button>   
+                <button class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-1 px-2 rounded"
+                    @click="_pullData()">
+                    Load Cell
+                </button>   
+                
+                <!-- Cell display: -->
+                <div v-for="cell in State.Segments" class="bg-slate-500 p-1 pl-4 my-2 rounded w-full" 
+                :class="{ 'bg-slate-400': State.ActiveSegment == cell }">
 
-            <div id="left-sidebar" class="h-full" style="width: 20%">
-                {{State.Mode}}
-                {{State.Points}}
+                    <!-- Closed:  -->
+                    <div v-if="cell.expanded == false">
+                        <span class="font-bold">{{ cell.name }}</span>
+                        <span> [{{ cell.points.length}} points] </span>
+                        <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-down cursor-pointer" @click="CollapseCell($event, cell)"></i>
+                    </div>
+                    <!-- Open: -->
+                    <div v-else>
+                        Name: <input v-model="cell.name" class="text-black px-1" />
+                        <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-up cursor-pointer" @click="CollapseCell($event, cell)"></i>
+                        <br/>
+
+                        <div class="w-full h-32 overflow-y-scroll">
+                            <div v-for="(point, index) in cell.points" class="flex py-1">
+                                <span class="">[{{index}}]</span> &nbsp;
+                                X: <input v-model="point.x" class="text-black w-12 h-6 mx-2" />
+                                Y: <input v-model="point.y" class="text-black w-12 h-6 mx-2" />
+                                Z: <input v-model="point.z" class="text-black w-12 h-6 mx-2" />
+                                <i class="fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint($event, cell, index)"></i>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
             </div>
 
             <canvas id="render-canvas" class="h-full bg-black rounded-lg" style="width: 60%"></canvas>
 
-            <div id="right-sidebar" class="h-full" style="width: 20%">
+            <div id="right-sidebar" class="h-full" style="width: 15%">
             </div>
         </div>
         
     </div>
 
+    <!-- # Vue:  -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
+
+    <!-- TailWinds:  -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome:  -->
+    <script src="https://kit.fontawesome.com/ead8c4de3a.js" crossorigin="anonymous"></script>
+
+    <!-- # Babylon:  -->
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <!-- <script src="https://cdn.babylonjs.com/babylon.max.js"></script> -->
     <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
@@ -49,28 +97,7 @@
     <script src="https://cdn.babylonjs.com/viewer/babylon.viewer.js"></script>
     <!-- <script src="https://cdn.babylonjs.com/viewer/babylon.viewer.max.js"></script> -->
    
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
-    <script>
-        var App = new Vue({
-            el: '#app-root',
-            data() {
-                return { 
-                    State: 
-                    {
-                        Canvas: null,
-                        Engine: null,
-                        Scene: null,
-                        Mode: "View",
-                        Tubes: [],
-                        Points: [],
-                        RightDown: false
-                    }
-                }
-            },
-        });
-
-    </script>
-
+    <!-- Custom:  -->
     <script src="user-interface.js"></script>
 
 </body>
