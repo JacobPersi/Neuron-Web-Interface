@@ -10,10 +10,15 @@ var App = new Vue({
                 Segments: [],
                 ActiveSegment: null,
                 Meshes: [],
+                IsDirty: false,
             }
         }
     },
     methods: {
+        NewCell: function() {
+            this.State.ActiveSegment = null;
+            this.State.Segments = [];
+        },
         NewSegment: function() {
             if (this.State.ActiveSegment != null) {
                 this.State.ActiveSegment.expanded = false;
@@ -39,6 +44,7 @@ var App = new Vue({
         },
         DeletePoint: function(event, cell, index) {
             this.State.ActiveSegment.points.splice(index, 1);
+            this.State.IsDirty = true;
         },
         _initializeCanvas: function() {
             const canvas = document.getElementById("render-canvas");
@@ -48,7 +54,7 @@ var App = new Vue({
             scene.clearColor = new BABYLON.Color3(0.1,0.1,0.1);
             // Camera:
             const camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, new BABYLON.Vector3(0, 0, 0));
-            camera.setPosition(new BABYLON.Vector3(0, 45, 120)); 
+            camera.setPosition(new BABYLON.Vector3(0, 45, 600)); 
             camera.setTarget(BABYLON.Vector3.Zero());
             camera.attachControl(canvas, true);
             // Lights:
@@ -56,8 +62,13 @@ var App = new Vue({
             light.intensity = 0.7;
             // Post Processing:
             const glow = new BABYLON.GlowLayer("glow");
+
+            this.State.GlowMat = new BABYLON.StandardMaterial("glowMat", scene);
+            this.State.GlowMat.emissiveColor = new BABYLON.Color3(0, 0, 1);
+            this.State.GlowMat.emissiveIntensity = 1;
+
             // Geometry:
-            let size = 45;
+            let size = 120;
             let lines = BABYLON.MeshBuilder.CreateLines("lines", {
                 points: [
                     new BABYLON.Vector3(-size, 0, -size),
@@ -127,18 +138,28 @@ var App = new Vue({
 
                     switch (data.message) {
                         case "GEO_DATA":
-                            console.log("data recieved");
-                            debugger;
-
+                            App.State.Segments = []
                             for (var segment in data.segments) {
+                                
 
-                                var point = {
-                                    name: "Segment [" + this.State.Segments.length + "]",
-                                    expanded: true,
-                                    points: []
+                                var points = data.segments[segment];
+                                for (var index in points) {
+                                    var point = points[index];
+                                    points[index] = {
+                                        position: new BABYLON.Vector3(point[0], point[1], point[2]),
+                                        diameter: point[3]
+                                    };
+                                }
+                                
+                                var entry = {
+                                    name: segment,
+                                    expanded: false,
+                                    points: data.segments[segment]
                                 }
 
+                                App.State.Segments.push(entry);
                             }
+                            App.State.IsDirty = true;
                             break;
                     }
                 }
@@ -150,11 +171,30 @@ var App = new Vue({
         },
         _preRender: function() {
 
-            if (this.State.ActiveSegment != null) {
-                // Remove all meshes - SLOW!
+            if (this.State.IsDirty == true) {
                 for (var mesh in this.State.Meshes) {
                     this.State.Meshes[mesh].dispose();
                 }
+
+                for (var index in this.State.Segments) {
+                    let segment = this.State.Segments[index];
+
+                    let path = [];
+                    for (var point_index in segment.points) {
+                        path.push(segment.points[point_index].position);
+                    }
+                    let tube = BABYLON.MeshBuilder.CreateTube("tube", { path: path });
+                    tube.material = this.State.GlowMat;
+                    this.State.Meshes.push(tube);
+                }
+
+                this.State.IsDirty = false;
+            }
+
+            /*
+            if (this.State.ActiveSegment != null) {
+                // Remove all meshes - SLOW!
+                
                 for (var index in this.State.ActiveSegment.points) {
                     index = parseInt(index);
                     if (this.State.ActiveSegment.points.length > 1) {
@@ -163,6 +203,7 @@ var App = new Vue({
                     }
                 }
             }
+            */
         }
     },
     mounted() {

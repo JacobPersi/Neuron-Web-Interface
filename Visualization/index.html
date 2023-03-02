@@ -3,6 +3,24 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Neuron Front End</title>
+    <style>
+        .scrollbar::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        .scrollbar::-webkit-scrollbar-track {
+            border-radius: 100vh;
+            background: #292524;
+        }
+        .scrollbar::-webkit-scrollbar-thumb {
+            background: #52525B;
+            border-radius: 100vh;
+            border: 3px solid #000;
+        }
+        .scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #71717A;
+        }
+    </style>
 </head>
 
 <body class="w-full h-full m-0 p-0 overflow-hidden rounded-md bg-stone-900">
@@ -19,20 +37,24 @@
         </div>
 
         <div class="flex w-full" style="height: 90%">
-            <div id="left-sidebar" class="h-full m-4" style="width: 25%">
-                <!-- New Cell: -->
-                <button class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-1 px-2 rounded"
-                    @click="NewSegment()">
-                    New Segment
-                </button>   
-                <button class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-1 px-2 rounded"
+            <div id="left-sidebar" class="h-full m-4 overflow-y-scroll scrollbar" style="width: 25%">
+                <!-- Sidebar Buttons: -->
+                <button class="bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-1 px-2 rounded"
+                    @click="NewCell()">
+                    New Cell
+                </button>
+                <button class="bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-1 px-2 rounded"
                     @click="_pullData()">
                     Load Cell
                 </button>   
+                <button class="bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-1 px-2 rounded"
+                    @click="NewSegment()">
+                    New Segment
+                </button>   
                 
                 <!-- Cell display: -->
-                <div v-for="cell in State.Segments" class="bg-slate-500 p-1 pl-4 my-2 rounded w-full" 
-                :class="{ 'bg-slate-400': State.ActiveSegment == cell }">
+                <div v-for="cell in State.Segments" class="bg-stone-800 p-1 pl-2 mr-3 my-2 rounded" 
+                :class="{ 'bg-stone-600': State.ActiveSegment == cell }">
 
                     <!-- Closed:  -->
                     <div v-if="cell.expanded == false">
@@ -46,12 +68,13 @@
                         <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-up cursor-pointer" @click="CollapseCell($event, cell)"></i>
                         <br/>
 
-                        <div class="w-full h-32 overflow-y-scroll">
+                        <div class="w-full h-32 overflow-y-scroll overflow-x-hidden scrollbar">
                             <div v-for="(point, index) in cell.points" class="flex py-1">
-                                <span class="">[{{index}}]</span> &nbsp;
-                                X: <input v-model="point.x" class="text-black w-12 h-6 mx-2" />
-                                Y: <input v-model="point.y" class="text-black w-12 h-6 mx-2" />
-                                Z: <input v-model="point.z" class="text-black w-12 h-6 mx-2" />
+                                X: <input v-model="point.position.x" class="text-black w-12 h-6 mx-2" />
+                                Y: <input v-model="point.position.y" class="text-black w-12 h-6 mx-2" />
+                                Z: <input v-model="point.position.z" class="text-black w-12 h-6 mx-2" />
+                                D: <input v-model="point.diameter" class="text-black w-12 h-6 mx-2" />
+
                                 <i class="fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint($event, cell, index)"></i>
                             </div>
                         </div>
