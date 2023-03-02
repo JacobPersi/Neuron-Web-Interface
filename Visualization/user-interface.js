@@ -11,6 +11,7 @@ var App = new Vue({
                 ActiveSegment: null,
                 Meshes: [],
                 IsDirty: false,
+                Scale: 0.1
             }
         }
     },
@@ -54,21 +55,21 @@ var App = new Vue({
             scene.clearColor = new BABYLON.Color3(0.1,0.1,0.1);
             // Camera:
             const camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, new BABYLON.Vector3(0, 0, 0));
-            camera.setPosition(new BABYLON.Vector3(0, 45, 600)); 
+            camera.setPosition(new BABYLON.Vector3(0, 45, 100)); 
             camera.setTarget(BABYLON.Vector3.Zero());
             camera.attachControl(canvas, true);
             // Lights:
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0));
             light.intensity = 0.7;
+
             // Post Processing:
             const glow = new BABYLON.GlowLayer("glow");
-
             this.State.GlowMat = new BABYLON.StandardMaterial("glowMat", scene);
-            this.State.GlowMat.emissiveColor = new BABYLON.Color3(0, 0, 1);
+            this.State.GlowMat.emissiveColor = new BABYLON.Color3(0, 0, .5);
             this.State.GlowMat.emissiveIntensity = 1;
 
             // Geometry:
-            let size = 120;
+            let size = 20;
             let lines = BABYLON.MeshBuilder.CreateLines("lines", {
                 points: [
                     new BABYLON.Vector3(-size, 0, -size),
@@ -104,7 +105,7 @@ var App = new Vue({
                     if (pickinfo.hit) {
                         position = pickinfo.pickedPoint;
                     } else {
-                        let distance = 120.0;
+                        let distance = 60.0;
                         position = new BABYLON.Vector3(
                             pickinfo.ray.origin.x + pickinfo.ray.direction.x * distance,
                             pickinfo.ray.origin.y + pickinfo.ray.direction.y * distance,
@@ -146,8 +147,11 @@ var App = new Vue({
                                 for (var index in points) {
                                     var point = points[index];
                                     points[index] = {
-                                        position: new BABYLON.Vector3(point[0], point[1], point[2]),
-                                        diameter: point[3]
+                                        position: new BABYLON.Vector3(
+                                            point[0] * App.State.Scale, 
+                                            point[1] * App.State.Scale, 
+                                            point[2] * App.State.Scale),
+                                        diameter: point[3] * App.State.Scale
                                     };
                                 }
                                 
@@ -183,7 +187,7 @@ var App = new Vue({
                     for (var point_index in segment.points) {
                         path.push(segment.points[point_index].position);
                     }
-                    let tube = BABYLON.MeshBuilder.CreateTube("tube", { path: path });
+                    let tube = BABYLON.MeshBuilder.CreateTube("tube", { path: path, radius: 0.3 });
                     tube.material = this.State.GlowMat;
                     this.State.Meshes.push(tube);
                 }
