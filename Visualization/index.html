@@ -67,8 +67,9 @@
                 
                 <div class="w-full mt-2">Active Mode:&nbsp;&nbsp;&nbsp;&nbsp;
                     <span class="rounded px-2 py-1" 
-                    :class="{ 'bg-red': State.ActiveView == 'Morphology', 'bg-pink': State.ActiveView == 'Biophysics', 'bg-purple': State.ActiveView == 'Recording', 'bg-deep-purple': State.ActiveView == 'Simulation' }"
-                    >{{State.ActiveView}}</span> 
+                    :class="{ 'bg-red': State.ActiveView == 'Morphology', 'bg-pink': State.ActiveView == 'Biophysics', 'bg-purple': State.ActiveView == 'Recording', 'bg-deep-purple': State.ActiveView == 'Simulation' }">
+                        {{State.ActiveView}}
+                    </span> 
                 </div>
                 <br/>
 
@@ -89,32 +90,78 @@
                     </button>
 
                     <!-- Render active segment: -->
-                    <div v-if="State.ActiveSegment != null" class="bg-stone-600 p-1 pl-2 mr-3 my-2 rounded">
-                        Name: <input v-model="State.ActiveSegment.name" class="text-black px-1" />
-                        <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-up cursor-pointer" @click="CollapseSegment($event, State.ActiveSegment)"></i>
+                    <div v-if="State.Morphology.ActiveSegment != null" class="bg-stone-600 p-1 pl-2 mr-3 my-2 rounded">
+                        Name: <input v-model="State.Morphology.ActiveSegment.name" class="text-black px-1" />
+                        <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-up cursor-pointer" @click="CollapseSegment($event, State.Morphology.ActiveSegment)"></i>
                         <br/>
 
                         <div class="w-full h-32 overflow-y-scroll scrollbar">
-                            <div v-for="(point, index) in State.ActiveSegment.points" class="flex py-1">
+                            <div v-for="(point, index) in State.Morphology.ActiveSegment.points" class="flex py-1">
                                 X: <input v-model="point.position.x" class="text-black w-12 h-6 mx-2" />
                                 Y: <input v-model="point.position.y" class="text-black w-12 h-6 mx-2" />
                                 Z: <input v-model="point.position.z" class="text-black w-12 h-6 mx-2" />
                                 D: <input v-model="point.diameter" class="text-black w-12 h-6 mx-2" />
 
-                                <i class="fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint($event, State.ActiveSegment, index)"></i>
+                                <i class="fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint($event, State.Morphology.ActiveSegment, index)"></i>
                             </div>
                         </div>
                     </div>
 
                     <!-- Render inactive segments: -->
-                    <div v-for="segment in State.Segments" class="bg-stone-800 p-1 pl-2 mr-3 my-2 rounded" v-if="State.ActiveSegment != segment">
+                    <div v-for="segment in State.Morphology.Segments" class="bg-stone-800 p-1 pl-2 mr-3 my-2 rounded" v-if="State.Morphology.ActiveSegment != segment">
                         <span class="font-bold">{{ segment.name }}</span>
                         <span> [{{ segment.points.length}} points] </span>
                         <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-down cursor-pointer" @click="CollapseSegment($event, segment)"></i>
                     </div>
 
                 </div>
+                <!-- Biophyiscs: -->
+                <div v-if="State.ActiveView == 'Biophysics'">
+                    <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
+                        <span class="font-bold">Global Celluar Kinetics:</span><br/>
+                        
+                        <span class="ml-4">Axial Resistance (Ohm * cm):</span><br/>
+                        <input v-model="State.Biophysics.Ra" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        
+                        <span class="ml-4">Membrane Capacitance (µ Farads / cm²):</span><br/>
+                        <input v-model="State.Biophysics.cm" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                    </div>
 
+                    <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
+                        <span class="font-bold">Soma Hodgkin-Huxley Kinetics:</span><br/>
+                        
+                        <span class="ml-4">Sodium Conductance (S / cm²):</span><br/>
+                        <input v-model="State.Biophysics.gnabar" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        
+                        <span class="ml-4">Potassium Conductance (S / cm²):</span><br/>
+                        <input v-model="State.Biophysics.gkbar" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                        
+                        <span class="ml-4">Leak Conductance (S / cm²):</span><br/>
+                        <input v-model="State.Biophysics.gl" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                        
+                        <span class="ml-4">Reversal Potential (mV):</span><br/>
+                        <input v-model="State.Biophysics.el" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                    </div>
+
+                    <div class="bg-zinc-600 p-1 pl-2 mr-3 rounded text-sm">
+                        <span class="font-bold">Dendritic Passive Kinetics:</span><br/>
+
+                        <span class="ml-4">Passive Conductance (S / cm²):</span><br/>
+                        <input v-model="State.Biophysics.g" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        
+                        <span class="ml-4">Leak Reversal Potential (mv):</span><br/>
+                        <input v-model="State.Biophysics.e" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                    </div>
+                </div>
+                <!-- Recording: -->
+                <div v-if="State.ActiveView == 'Recording'">
+                    <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
+                        <span class="font-bold">Stimulus:</span><br/>
+                    </div>
+                    <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
+                        <span class="font-bold">Trace:</span><br/>
+                    </div>
+                </div>
             </div>
 
             <canvas id="render-canvas" class="h-full bg-black rounded-lg" style="width: 60%"></canvas>

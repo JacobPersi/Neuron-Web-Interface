@@ -8,51 +8,66 @@ var App = new Vue({
                 Engine: null,
                 Scene: null,
                 ActiveView: "Morphology",
-                ActiveSegment: null,
-                Segments: [],
-                RedrawRequired: false,
-                Scale: 0.1
+                
+                Morphology: {
+                    ActiveSegment: null,
+                    Segments: [],
+                    RedrawRequired: false,
+                    Scale: 0.1,
+                },
+                Biophysics: {
+                    Ra: 100,
+                    cm: 1,
+                    gnabar: 0.12,
+                    gkbar: 0.036,
+                    gl: 0.0003,
+                    el: -54.3,
+                    g: 0.001,
+                    e: -65
+                },
             }
         }
     },
     methods: {
         SetView: function(view) {
             this.State.ActiveView = view;
+            this.State.Morphology.ActiveSegment = null;
+            this.State.Morphology.RedrawRequired = true;
         },
         NewCell: function() {
-            this.State.ActiveSegment = null;
-            this.State.Segments = [];
-            this.State.RedrawRequired = true;
+            this.State.Morphology.ActiveSegment = null;
+            this.State.Morphology.Segments = [];
+            this.State.Morphology.RedrawRequired = true;
         },
         NewSegment: function() {
-            if (this.State.ActiveSegment != null) {
-                this.State.ActiveSegment.expanded = false;
+            if (this.State.Morphology.ActiveSegment != null) {
+                this.State.Morphology.ActiveSegment.expanded = false;
             }
             let segment = {
-                name: "Segment [" + this.State.Segments.length + "]",
+                name: "Segment [" + this.State.Morphology.Segments.length + "]",
                 expanded: true,
                 points: [],
                 mesh: null
             };
-            this.State.Segments.push(segment);
-            this.State.ActiveSegment = segment;
-            this.State.RedrawRequired = true;
+            this.State.Morphology.Segments.push(segment);
+            this.State.Morphology.ActiveSegment = segment;
+            this.State.Morphology.RedrawRequired = true;
         },
         CollapseSegment: function(event, segment) {
-            if (this.State.ActiveSegment != segment && this.State.ActiveSegment != null) {
-                this.State.ActiveSegment.expanded = false;
+            if (this.State.Morphology.ActiveSegment != segment && this.State.Morphology.ActiveSegment != null) {
+                this.State.Morphology.ActiveSegment.expanded = false;
             }
             segment.expanded = ! segment.expanded;
             if (segment.expanded == true) {
-                this.State.ActiveSegment = segment;
-                this.State.RedrawRequired = true;
+                this.State.Morphology.ActiveSegment = segment;
+                this.State.Morphology.RedrawRequired = true;
             } else {
-                this.State.ActiveSegment = null;
+                this.State.Morphology.ActiveSegment = null;
             }
         },
         DeletePoint: function(event, segment, index) {
-            this.State.ActiveSegment.points.splice(index, 1);
-            this.State.RedrawRequired = true;
+            this.State.Morphology.ActiveSegment.points.splice(index, 1);
+            this.State.Morphology.RedrawRequired = true;
         },
         _initializeCanvas: function() {
             const canvas = document.getElementById("render-canvas");
@@ -79,16 +94,19 @@ var App = new Vue({
             this.State.ActiveMat.emissiveColor = new BABYLON.Color3(1, 0, 0);
             this.State.ActiveMat.emissiveIntensity = 1;
 
+            this.State.IdleMat = new BABYLON.StandardMaterial("idleMat", scene);
+            this.State.IdleMat.emissiveColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+            this.State.IdleMat.emissiveIntensity = 0;
 
             // Geometry:
             let size = 20;
             let lines = BABYLON.MeshBuilder.CreateLines("lines", {
                 points: [
-                    new BABYLON.Vector3(-size, 0, -size),
-                    new BABYLON.Vector3(-size, 0, size),
-                    new BABYLON.Vector3(size, 0, size),
-                    new BABYLON.Vector3(size, 0, -size),
-                    new BABYLON.Vector3(-size, 0, -size)
+                    new BABYLON.Vector3(-size, -30, -size),
+                    new BABYLON.Vector3(-size, -30, size),
+                    new BABYLON.Vector3(size, -30, size),
+                    new BABYLON.Vector3(size, -30, -size),
+                    new BABYLON.Vector3(-size, -30, -size)
                 ]
             });
             // Store References:
@@ -116,11 +134,11 @@ var App = new Vue({
                     
                     let pickinfo = this.State.Scene.pick(this.State.Scene.pointerX, this.State.Scene.pointerY);
                     if (pickinfo.hit) {
-                        for(var index in this.State.Segments) {
-                            var segment = this.State.Segments[index];
+                        for(var index in this.State.Morphology.Segments) {
+                            var segment = this.State.Morphology.Segments[index];
                             if (segment.mesh == pickinfo.pickedMesh) {
-                                this.State.ActiveSegment = segment;
-                                this.State.RedrawRequired = true;
+                                this.State.Morphology.ActiveSegment = segment;
+                                this.State.Morphology.RedrawRequired = true;
                             }
                         }
                     }
@@ -169,19 +187,17 @@ var App = new Vue({
 
                     switch (data.message) {
                         case "GEO_DATA":
-                            App.State.Segments = []
+                            App.State.Morphology.Segments = []
                             for (var segment in data.segments) {
-                                
-
                                 var points = data.segments[segment];
                                 for (var index in points) {
                                     var point = points[index];
                                     points[index] = {
                                         position: new BABYLON.Vector3(
-                                            point[0] * App.State.Scale, 
-                                            point[1] * App.State.Scale, 
-                                            point[2] * App.State.Scale),
-                                        diameter: point[3] * App.State.Scale
+                                            point[0] * App.State.Morphology.Scale, 
+                                            point[1] * App.State.Morphology.Scale, 
+                                            point[2] * App.State.Morphology.Scale),
+                                        diameter: point[3] * App.State.Morphology.Scale
                                     };
                                 }
                                 
@@ -192,9 +208,9 @@ var App = new Vue({
                                     mesh: null
                                 }
 
-                                App.State.Segments.push(entry);
+                                App.State.Morphology.Segments.push(entry);
                             }
-                            App.State.RedrawRequired = true;
+                            App.State.Morphology.RedrawRequired = true;
                             break;
                     }
                 }
@@ -206,11 +222,11 @@ var App = new Vue({
         },
         _preRender: function() {
 
-            if (this.State.RedrawRequired == true) {
+            if (this.State.Morphology.RedrawRequired == true) {
                 console.log("Redraw!");
 
-                for (var index in this.State.Segments) {
-                    let segment = this.State.Segments[index];
+                for (var index in this.State.Morphology.Segments) {
+                    let segment = this.State.Morphology.Segments[index];
 
                     if (segment.mesh != null) {
                        segment.mesh.dispose();    
@@ -222,16 +238,20 @@ var App = new Vue({
                     }
                     let tube = BABYLON.MeshBuilder.CreateTube("tube", { path: path, radius: 0.3 });
                     
-                    if (this.State.ActiveSegment == segment) {
-                        tube.material = this.State.ActiveMat;
+                    if (this.State.ActiveView == 'Morphology') {
+                        if (this.State.Morphology.ActiveSegment == segment) {
+                            tube.material = this.State.ActiveMat;
+                        } else {
+                            tube.material = this.State.GlowMat;
+                        }
                     } else {
-                        tube.material = this.State.GlowMat;
+                        tube.material = this.State.IdleMat
                     }
 
                     segment.mesh = tube;
                 }
 
-                this.State.RedrawRequired = false;
+                this.State.Morphology.RedrawRequired = false;
             }
         }
     },
