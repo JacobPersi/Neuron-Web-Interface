@@ -20,67 +20,101 @@
         .scrollbar::-webkit-scrollbar-thumb:hover {
             background: #71717A;
         }
+        .bg-red {
+            background: #f44336;
+        } 
+        .bg-pink {
+            background: #e91e63;
+        }
+        .bg-purple {
+            background: #9c27b0;
+        }
+        .bg-deep-purple {
+            background: #673ab7;
+        }
+        .bg-deep-purple-400 {
+            background: #7e57c2;
+        }
     </style>
 </head>
 
 <body class="w-full h-full m-0 p-0 overflow-hidden rounded-md bg-stone-900">
     <div id="app-root" class="w-full h-full text-white">
 
-        <div id="topbar" class="w-full rounded-lg bg-stone-800 rounded-b-none grid place-items-center" style="height: 10%">
-            <div class="w-64 text-3xl font-bold font-mono">>NeuronSim</div>
+        <div id="topbar" class="w-full rounded-lg bg-stone-800 rounded-b-none grid place-items-center pb-5" style="height: 10%">
+            <div class="w-128 text-3xl font-bold font-mono">> NeuronSim</div>
             <div class="w-128 text-xl">
-                <span>Morphology</span> - 
-                <span>Biophysics</span> - 
-                <span>Recording</span> - 
-                <span>Simulation</span>
+                <button class="bg-red hover:bg-red-400 text-white text-sm py-1 px-2 rounded" @click="SetView('Morphology')">
+                    Morphology
+                </button>
+                -
+                <button class="bg-pink hover:bg-pink-400 text-white text-sm py-1 px-2 rounded" @click="SetView('Biophysics')">
+                    Biophysics
+                </button>
+                -
+                <button class="bg-purple hover:bg-purple-400 text-white text-sm py-1 px-2 rounded" @click="SetView('Recording')">
+                    Recording
+                </button>
+                -
+                <button class="bg-deep-purple hover:bg-deep-purple-400 text-white text-sm py-1 px-2 rounded" @click="SetView('Simulation')">
+                    Simulation
+                </button>
             </div>
         </div>
 
         <div class="flex w-full" style="height: 90%">
             <div id="left-sidebar" class="h-full m-4 overflow-y-scroll scrollbar" style="width: 25%">
-                <!-- Sidebar Buttons: -->
-                <button class="bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-1 px-2 rounded"
-                    @click="NewCell()">
-                    New Cell
-                </button>
-                <button class="bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-1 px-2 rounded"
-                    @click="_pullData()">
-                    Load Cell
-                </button>   
-                <button class="bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-1 px-2 rounded"
-                    @click="NewSegment()">
-                    New Segment
-                </button>   
                 
-                <!-- Cell display: -->
-                <div v-for="cell in State.Segments" class="bg-stone-800 p-1 pl-2 mr-3 my-2 rounded" 
-                :class="{ 'bg-stone-600': State.ActiveSegment == cell }">
+                <div class="w-full mt-2">Active Mode:&nbsp;&nbsp;&nbsp;&nbsp;
+                    <span class="rounded px-2 py-1" 
+                    :class="{ 'bg-red': State.ActiveView == 'Morphology', 'bg-pink': State.ActiveView == 'Biophysics', 'bg-purple': State.ActiveView == 'Recording', 'bg-deep-purple': State.ActiveView == 'Simulation' }"
+                    >{{State.ActiveView}}</span> 
+                </div>
+                <br/>
 
-                    <!-- Closed:  -->
-                    <div v-if="cell.expanded == false">
-                        <span class="font-bold">{{ cell.name }}</span>
-                        <span> [{{ cell.points.length}} points] </span>
-                        <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-down cursor-pointer" @click="CollapseCell($event, cell)"></i>
-                    </div>
-                    <!-- Open: -->
-                    <div v-else>
-                        Name: <input v-model="cell.name" class="text-black px-1" />
-                        <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-up cursor-pointer" @click="CollapseCell($event, cell)"></i>
+                <!-- Morphology: -->
+                <div v-if="State.ActiveView == 'Morphology'">
+                    <!-- Sidebar Buttons: -->
+                    <button class="bg-zinc-600 hover:bg-zinc-500 text-white text-sm py-1 px-2 rounded"
+                        @click="_pullData()">
+                        Load Cell
+                    </button>   
+                    <button class="bg-zinc-600 hover:bg-zinc-500 text-white text-sm py-1 px-2 rounded"
+                        @click="NewSegment()">
+                        New Segment
+                    </button>   
+                    <button class="bg-zinc-600 hover:bg-zinc-500 text-white text-sm py-1 px-2 rounded"
+                        @click="NewCell()">
+                        Clear Scene
+                    </button>
+
+                    <!-- Render active segment: -->
+                    <div v-if="State.ActiveSegment != null" class="bg-stone-600 p-1 pl-2 mr-3 my-2 rounded">
+                        Name: <input v-model="State.ActiveSegment.name" class="text-black px-1" />
+                        <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-up cursor-pointer" @click="CollapseSegment($event, State.ActiveSegment)"></i>
                         <br/>
 
-                        <div class="w-full h-32 overflow-y-scroll overflow-x-hidden scrollbar">
-                            <div v-for="(point, index) in cell.points" class="flex py-1">
+                        <div class="w-full h-32 overflow-y-scroll scrollbar">
+                            <div v-for="(point, index) in State.ActiveSegment.points" class="flex py-1">
                                 X: <input v-model="point.position.x" class="text-black w-12 h-6 mx-2" />
                                 Y: <input v-model="point.position.y" class="text-black w-12 h-6 mx-2" />
                                 Z: <input v-model="point.position.z" class="text-black w-12 h-6 mx-2" />
                                 D: <input v-model="point.diameter" class="text-black w-12 h-6 mx-2" />
 
-                                <i class="fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint($event, cell, index)"></i>
+                                <i class="fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint($event, State.ActiveSegment, index)"></i>
                             </div>
                         </div>
-
                     </div>
+
+                    <!-- Render inactive segments: -->
+                    <div v-for="segment in State.Segments" class="bg-stone-800 p-1 pl-2 mr-3 my-2 rounded" v-if="State.ActiveSegment != segment">
+                        <span class="font-bold">{{ segment.name }}</span>
+                        <span> [{{ segment.points.length}} points] </span>
+                        <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-down cursor-pointer" @click="CollapseSegment($event, segment)"></i>
+                    </div>
+
                 </div>
+
             </div>
 
             <canvas id="render-canvas" class="h-full bg-black rounded-lg" style="width: 60%"></canvas>

@@ -7,18 +7,22 @@ var App = new Vue({
                 Canvas: null,
                 Engine: null,
                 Scene: null,
-                Segments: [],
+                ActiveView: "Morphology",
                 ActiveSegment: null,
-                Meshes: [],
-                IsDirty: false,
+                Segments: [],
+                RedrawRequired: false,
                 Scale: 0.1
             }
         }
     },
     methods: {
+        SetView: function(view) {
+            this.State.ActiveView = view;
+        },
         NewCell: function() {
             this.State.ActiveSegment = null;
             this.State.Segments = [];
+            this.State.RedrawRequired = true;
         },
         NewSegment: function() {
             if (this.State.ActiveSegment != null) {
@@ -27,25 +31,28 @@ var App = new Vue({
             let segment = {
                 name: "Segment [" + this.State.Segments.length + "]",
                 expanded: true,
-                points: []
+                points: [],
+                mesh: null
             };
             this.State.Segments.push(segment);
             this.State.ActiveSegment = segment;
+            this.State.RedrawRequired = true;
         },
-        CollapseCell: function(event, cell) {
-            if (this.State.ActiveSegment != cell && this.State.ActiveSegment != null) {
+        CollapseSegment: function(event, segment) {
+            if (this.State.ActiveSegment != segment && this.State.ActiveSegment != null) {
                 this.State.ActiveSegment.expanded = false;
             }
-            cell.expanded = ! cell.expanded;
-            if (cell.expanded == true) {
-                this.State.ActiveSegment = cell;
+            segment.expanded = ! segment.expanded;
+            if (segment.expanded == true) {
+                this.State.ActiveSegment = segment;
+                this.State.RedrawRequired = true;
             } else {
                 this.State.ActiveSegment = null;
             }
         },
-        DeletePoint: function(event, cell, index) {
+        DeletePoint: function(event, segment, index) {
             this.State.ActiveSegment.points.splice(index, 1);
-            this.State.IsDirty = true;
+            this.State.RedrawRequired = true;
         },
         _initializeCanvas: function() {
             const canvas = document.getElementById("render-canvas");
@@ -66,7 +73,12 @@ var App = new Vue({
             const glow = new BABYLON.GlowLayer("glow");
             this.State.GlowMat = new BABYLON.StandardMaterial("glowMat", scene);
             this.State.GlowMat.emissiveColor = new BABYLON.Color3(0, 0, .5);
-            this.State.GlowMat.emissiveIntensity = 1;
+            this.State.GlowMat.emissiveIntensity = 0.5;
+
+            this.State.ActiveMat = new BABYLON.StandardMaterial("activeMat", scene);
+            this.State.ActiveMat.emissiveColor = new BABYLON.Color3(1, 0, 0);
+            this.State.ActiveMat.emissiveIntensity = 1;
+
 
             // Geometry:
             let size = 20;
@@ -96,8 +108,25 @@ var App = new Vue({
             this.State.Scene.onBeforeRenderObservable.add(this._preRender);
         },
         _pointerCallback: function(pointerInfo) {
+            // Mouse click:
             if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP) {
+                
+                // Left mouse click:
+                if (pointerInfo.event.button == 0) {
+                    
+                    let pickinfo = this.State.Scene.pick(this.State.Scene.pointerX, this.State.Scene.pointerY);
+                    if (pickinfo.hit) {
+                        for(var index in this.State.Segments) {
+                            var segment = this.State.Segments[index];
+                            if (segment.mesh == pickinfo.pickedMesh) {
+                                this.State.ActiveSegment = segment;
+                                this.State.RedrawRequired = true;
+                            }
+                        }
+                    }
+                }
 
+                /*
                 if (pointerInfo.event.button == 2) {
                     let position = null;    
         
@@ -119,6 +148,7 @@ var App = new Vue({
                         }
                     }
                 }
+                */
             }
         },
         _pullData: function() {
@@ -158,12 +188,13 @@ var App = new Vue({
                                 var entry = {
                                     name: segment,
                                     expanded: false,
-                                    points: data.segments[segment]
+                                    points: data.segments[segment],
+                                    mesh: null
                                 }
 
                                 App.State.Segments.push(entry);
                             }
-                            App.State.IsDirty = true;
+                            App.State.RedrawRequired = true;
                             break;
                     }
                 }
@@ -175,39 +206,33 @@ var App = new Vue({
         },
         _preRender: function() {
 
-            if (this.State.IsDirty == true) {
-                for (var mesh in this.State.Meshes) {
-                    this.State.Meshes[mesh].dispose();
-                }
+            if (this.State.RedrawRequired == true) {
+                console.log("Redraw!");
 
                 for (var index in this.State.Segments) {
                     let segment = this.State.Segments[index];
+
+                    if (segment.mesh != null) {
+                       segment.mesh.dispose();    
+                    }            
 
                     let path = [];
                     for (var point_index in segment.points) {
                         path.push(segment.points[point_index].position);
                     }
                     let tube = BABYLON.MeshBuilder.CreateTube("tube", { path: path, radius: 0.3 });
-                    tube.material = this.State.GlowMat;
-                    this.State.Meshes.push(tube);
-                }
-
-                this.State.IsDirty = false;
-            }
-
-            /*
-            if (this.State.ActiveSegment != null) {
-                // Remove all meshes - SLOW!
-                
-                for (var index in this.State.ActiveSegment.points) {
-                    index = parseInt(index);
-                    if (this.State.ActiveSegment.points.length > 1) {
-                        let tube = BABYLON.MeshBuilder.CreateTube("tube", { path: this.State.ActiveSegment.points });
-                        this.State.Meshes.push(tube);
+                    
+                    if (this.State.ActiveSegment == segment) {
+                        tube.material = this.State.ActiveMat;
+                    } else {
+                        tube.material = this.State.GlowMat;
                     }
+
+                    segment.mesh = tube;
                 }
+
+                this.State.RedrawRequired = false;
             }
-            */
         }
     },
     mounted() {
@@ -233,7 +258,6 @@ function geometry_callback(data) {
         let tube = BABYLON.MeshBuilder.CreateTube("tube", { path: happy_data });
         tube.material = redMat;
     }
-    debugger;
 };
 
 
