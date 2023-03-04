@@ -1,117 +1,246 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" class="w-full h-full m-0 p-2 overflow-hidden bg-zinc-900">
-
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <title>Babylon Template</title>
-
-        <script src="https://cdn.tailwindcss.com"></script>
-
-        <script src="https://cdn.babylonjs.com/babylon.js"></script>
-        <!-- <script src="https://cdn.babylonjs.com/babylon.max.js"></script> -->
-        <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
-        <!-- <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.js"></script> -->
-        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-        <!-- <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script> -->
-        <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
-        <!-- <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.js"></script> -->
-        <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
-        <!-- <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.js"></script> -->
-        <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
-        <!-- <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.js"></script> -->
-        <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
-        <!-- <script src="https://cdn.babylonjs.com/gui/babylon.gui.js"></script> -->
-        <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
-        <!-- <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.max.js"></script> -->
-        <script src="https://cdn.babylonjs.com/viewer/babylon.viewer.js"></script>
-        <!-- <script src="https://cdn.babylonjs.com/viewer/babylon.viewer.max.js"></script> -->
-    </head>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Neuron Front End</title>
+    <style>
+        .scrollbar::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        .scrollbar::-webkit-scrollbar-track {
+            border-radius: 100vh;
+            background: #292524;
+        }
+        .scrollbar::-webkit-scrollbar-thumb {
+            background: #52525B;
+            border-radius: 100vh;
+            border: 3px solid #000;
+        }
+        .scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #71717A;
+        }
+        .bg-red {
+            background: #f44336;
+        } 
+        .bg-pink {
+            background: #e91e63;
+        }
+        .bg-purple {
+            background: #9c27b0;
+        }
+        .bg-deep-purple {
+            background: #673ab7;
+        }
+        .bg-deep-purple-400 {
+            background: #7e57c2;
+        }
+    </style>
+</head>
 
 <body class="w-full h-full m-0 p-0 overflow-hidden rounded-md bg-stone-900">
+    <div id="app-root" class="w-full h-full text-white">
 
-    <div id="topbar" class="w-full text-white rounded-lg bg-stone-800 rounded-b-none grid place-items-center" style="height: 10%">
-        <div class="w-64 text-3xl font-bold font-mono">>NeuronSim</div>
-        <div class="w-128 text-xl">Morphology - Biophysics - Recording - Simulation</div>
-    </div>
-    <div class="flex w-full" style="height: 90%">
-        <div class="h-full m-4" style="width: 3%">
-            
+        <div id="topbar" class="w-full rounded-lg bg-stone-800 rounded-b-none grid place-items-center pb-5" style="height: 10%">
+            <div class="w-128 text-3xl font-bold font-mono">> NeuronSim</div>
+            <div class="w-128 text-xl">
+                <button class="bg-red hover:bg-red-400 text-white text-sm py-1 px-2 rounded" @click="SetView('Morphology')">
+                    Morphology
+                </button>
+                -
+                <button class="bg-pink hover:bg-pink-400 text-white text-sm py-1 px-2 rounded" @click="SetView('Biophysics')">
+                    Biophysics
+                </button>
+                -
+                <button class="bg-purple hover:bg-purple-400 text-white text-sm py-1 px-2 rounded" @click="SetView('Simulation')">
+                    Simulation
+                </button>
+                -
+                <button class="bg-deep-purple hover:bg-deep-purple-400 text-white text-sm py-1 px-2 rounded" @click="SetView('Visualization')">
+                    Visualization
+                </button>
+            </div>
         </div>
-        <canvas id="renderCanvas" class="h-full p-2 bg-black rounded-lg" style="width: 70%"></canvas>
-        <div class="h-full p-2" style="width: 27%">
-        </div>
-    </div>
 
-	<script>
-        const canvas = document.getElementById("renderCanvas");
-        const engine = new BABYLON.Engine(canvas, true);
-
-        const scene = new BABYLON.Scene(engine);
-        scene.clearColor = new BABYLON.Color3(0.1,0.1,0.1);
-
-        const camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, new BABYLON.Vector3(0, 0, 0));
-        // Positions the camera overwriting alpha, beta, radius
-        camera.setPosition(new BABYLON.Vector3(50, 20, 120));
-        camera.setTarget(BABYLON.Vector3.Zero());
-        camera.attachControl(canvas, true);
-
-        const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0));
-        light.intensity = 0.7;
-
-        const glow = new BABYLON.GlowLayer("glow");
-
-        var redMat = new BABYLON.StandardMaterial("redMat");
-        redMat.emissiveColor = new BABYLON.Color3(0.1, 0, 0);
-        
-        function geometry_callback(data) {
-            for (var segment_name in data) {
+        <div class="flex w-full" style="height: 90%">
+            <div id="left-sidebar" class="h-full m-4 overflow-y-scroll scrollbar" style="width: 25%">
                 
-                var happy_data = [];
-                var point_data = data[segment_name];
-                for (var point in point_data) {
-                    let x = point_data[point][0];
-                    let y = point_data[point][1];
-                    let z = point_data[point][2];
-                    let vect = new BABYLON.Vector3(x,y,z);
-                    happy_data.push(vect);
-                }
-                let tube = BABYLON.MeshBuilder.CreateTube("tube", { path: happy_data });
-                tube.material = redMat;
-            }
-        };
+                <div class="w-full mt-2">Active Mode:&nbsp;&nbsp;&nbsp;&nbsp;
+                    <span class="rounded px-2 py-1" 
+                    :class="{ 'bg-red': State.ActiveView == 'Morphology', 'bg-pink': State.ActiveView == 'Biophysics', 'bg-purple': State.ActiveView == 'Simulation', 'bg-deep-purple': State.ActiveView == 'Visualization' }">
+                        {{State.ActiveView}}
+                    </span> 
+                </div>
+                <br/>
 
-        const socket = new WebSocket('ws://localhost:8001');
-        socket.onmessage = (event) => {
-            data = event.data
-            try {
-                data = JSON.parse(data);
-                data = JSON.parse(data[0]);
+                <!-- Morphology: -->
+                <div v-if="State.ActiveView == 'Morphology'">
+                    <!-- Sidebar Buttons: -->
+                    <button class="bg-zinc-600 hover:bg-zinc-500 text-white text-sm py-1 px-2 rounded"
+                        @click="_pullData()">
+                        Load Cell
+                    </button>   
+                    <button class="bg-zinc-600 hover:bg-zinc-500 text-white text-sm py-1 px-2 rounded"
+                        @click="NewSegment()">
+                        New Segment
+                    </button>   
+                    <button class="bg-zinc-600 hover:bg-zinc-500 text-white text-sm py-1 px-2 rounded"
+                        @click="NewCell()">
+                        Clear Scene
+                    </button>
 
-                switch (data.message) {
-                    case "GEO_DATA":
-                        console.log("data recieved");
-                        geometry_callback(data.data);
-                        break;
-                }
-            }
-            catch(err) {
-                debugger;
-            }
-        };
-        socket.onopen = (event) => {
-            socket.send(JSON.stringify({
-                message: "INIT", data: {}
-            }));
-        };
+                    <!-- Render active segment: -->
+                    <div v-if="State.Morphology.ActiveSegment != null" class="bg-stone-600 p-1 pl-2 mr-3 my-2 rounded">
+                        Name: <input v-model="State.Morphology.ActiveSegment.name" class="text-black px-1" />
+                        <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-up cursor-pointer" @click="CollapseSegment($event, State.Morphology.ActiveSegment)"></i>
+                        <br/>
 
+                        <div class="w-full h-32 overflow-y-scroll scrollbar">
+                            <div v-for="(point, index) in State.Morphology.ActiveSegment.points" class="flex py-1">
+                                X: <input v-model="point.position.x" class="text-black w-12 h-6 mx-2" />
+                                Y: <input v-model="point.position.y" class="text-black w-12 h-6 mx-2" />
+                                Z: <input v-model="point.position.z" class="text-black w-12 h-6 mx-2" />
+                                D: <input v-model="point.diameter" class="text-black w-12 h-6 mx-2" />
 
-        engine.runRenderLoop(function () {
-            scene.render();
-        });
-        window.addEventListener("resize", function () {
-            engine.resize();
-        });
+                                <i class="fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint($event, State.Morphology.ActiveSegment, index)"></i>
+                            </div>
+                        </div>
+                    </div>
 
-	</script>
-   </body>
+                    <!-- Render inactive segments: -->
+                    <div v-for="segment in State.Morphology.Segments" class="bg-stone-800 p-1 pl-2 mr-3 my-2 rounded" v-if="State.Morphology.ActiveSegment != segment">
+                        <span class="font-bold">{{ segment.name }}</span>
+                        <span> [{{ segment.points.length}} points] </span>
+                        <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-down cursor-pointer" @click="CollapseSegment($event, segment)"></i>
+                    </div>
+
+                </div>
+                <!-- Biophyiscs: -->
+                <div v-if="State.ActiveView == 'Biophysics'">
+                    <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
+                        <span class="font-bold">Global Celluar Kinetics:</span><br/>
+                        
+                        <span class="ml-4">Axial Resistance (Ohm * cm):</span><br/>
+                        <input v-model="State.Biophysics.Ra" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        
+                        <span class="ml-4">Membrane Capacitance (µ Farads / cm²):</span><br/>
+                        <input v-model="State.Biophysics.cm" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                    </div>
+
+                    <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
+                        <span class="font-bold">Soma Hodgkin-Huxley Kinetics:</span><br/>
+                        
+                        <span class="ml-4">Sodium Conductance (S / cm²):</span><br/>
+                        <input v-model="State.Biophysics.gnabar" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        
+                        <span class="ml-4">Potassium Conductance (S / cm²):</span><br/>
+                        <input v-model="State.Biophysics.gkbar" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                        
+                        <span class="ml-4">Leak Conductance (S / cm²):</span><br/>
+                        <input v-model="State.Biophysics.gl" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                        
+                        <span class="ml-4">Reversal Potential (mV):</span><br/>
+                        <input v-model="State.Biophysics.el" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                    </div>
+
+                    <div class="bg-zinc-600 p-1 pl-2 mr-3 rounded text-sm">
+                        <span class="font-bold">Dendritic Passive Kinetics:</span><br/>
+
+                        <span class="ml-4">Passive Conductance (S / cm²):</span><br/>
+                        <input v-model="State.Biophysics.g" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        
+                        <span class="ml-4">Leak Reversal Potential (mv):</span><br/>
+                        <input v-model="State.Biophysics.e" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                    </div>
+                </div>
+                <!-- Recording: -->
+                <div v-if="State.ActiveView == 'Simulation'">
+                    <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
+                        <span class="font-bold">Stimulus:</span>
+                        <i class="fa-solid fa-plus pl-60 r-0 w-8 h-8 cursor-pointer" @click=""></i>
+
+                        <br/>
+                        <div class="w-64">
+                            <span class="ml-4 w-48">Segment:</span>
+                            <input v-model="State.Simulation.Stimulation.Segment" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+
+                            <span class="ml-4 w-48">Location:</span>
+                            <input v-model="State.Simulation.Stimulation.Location" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+
+                            <span class="ml-4 w-48">Delay:</span>
+                            <input v-model="State.Simulation.Stimulation.Delay" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+
+                            <span class="ml-4 w-48">Duration:</span>
+                            <input v-model="State.Simulation.Stimulation.Duration" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+
+                            <span class="ml-4 w-48">Amplitude:</span>
+                            <input v-model="State.Simulation.Stimulation.Amplitude" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        </div>
+
+                    </div>
+                    <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
+                        <span class="font-bold">Trace:</span>
+                        <i class="fa-solid fa-plus pl-64 r-0 w-8 h-8 cursor-pointer" @click=""></i>
+
+                        <br/>
+                        <div class="w-64">
+                            <span class="ml-4 w-48">Segment:</span>
+                            <input v-model="State.Simulation.Recording.Segment" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+
+                            <span class="ml-4 w-48">Location:</span>
+                            <input v-model="State.Simulation.Recording.Location" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="State.ActiveView == 'Visualization'">
+                    <button class="bg-zinc-600 hover:bg-zinc-500 text-white text-sm py-1 px-2 rounded"
+                        @click="RunSimulation()">
+                        Run Simulation
+                    </button>   
+                </div>
+
+            </div>
+
+            <canvas id="render-canvas" class="h-full bg-black rounded-lg" style="width: 60%"></canvas>
+
+            <div id="right-sidebar" class="h-full" style="width: 15%">
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- # Vue:  -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
+
+    <!-- TailWinds:  -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome:  -->
+    <script src="https://kit.fontawesome.com/ead8c4de3a.js" crossorigin="anonymous"></script>
+
+    <!-- # Babylon:  -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <!-- <script src="https://cdn.babylonjs.com/babylon.max.js"></script> -->
+    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    <!-- <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.js"></script> -->
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <!-- <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script> -->
+    <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+    <!-- <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.js"></script> -->
+    <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+    <!-- <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.js"></script> -->
+    <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+    <!-- <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.js"></script> -->
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <!-- <script src="https://cdn.babylonjs.com/gui/babylon.gui.js"></script> -->
+    <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+    <!-- <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.max.js"></script> -->
+    <script src="https://cdn.babylonjs.com/viewer/babylon.viewer.js"></script>
+    <!-- <script src="https://cdn.babylonjs.com/viewer/babylon.viewer.max.js"></script> -->
+   
+    <!-- Custom:  -->
+    <script src="user-interface.js"></script>
+
+</body>
 </html>
