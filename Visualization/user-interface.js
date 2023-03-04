@@ -25,6 +25,19 @@ var App = new Vue({
                     g: 0.001,
                     e: -65
                 },
+                Simulation: {
+                    Stimulation: {
+                        Segment: "soma",
+                        Location: 0, 
+                        Delay: 5,
+                        Duration: 1, 
+                        Amplitude: 0.1
+                    },
+                    Recording: {
+                        Segment: "axon",
+                        Location: 1,
+                    }
+                }
             }
         }
     },
@@ -68,6 +81,35 @@ var App = new Vue({
         DeletePoint: function(event, segment, index) {
             this.State.Morphology.ActiveSegment.points.splice(index, 1);
             this.State.Morphology.RedrawRequired = true;
+        },
+        RunSimulation: function() {
+            const socket = new WebSocket('ws://localhost:8001');
+            // Request data:
+            socket.onopen = (event) => {
+                socket.send(JSON.stringify({
+                    message: "RUN_SIM", 
+                    data: { 
+                        Biophysics: App.State.Biophysics, 
+                        Simulation: App.State.Simulation
+                    }
+                }));
+            };
+
+            // Recieve data:
+            socket.onmessage = (event) => {
+                let data = event.data
+                try {
+                    data = JSON.parse(data);
+                    data = JSON.parse(data[0]);
+
+                    if (data.message == "SIM_RESULTS") {
+                            
+                    }
+                }
+                catch(err) {
+                    console.log(err);
+                }
+            };
         },
         _initializeCanvas: function() {
             const canvas = document.getElementById("render-canvas");
@@ -185,33 +227,31 @@ var App = new Vue({
                     data = JSON.parse(data);
                     data = JSON.parse(data[0]);
 
-                    switch (data.message) {
-                        case "GEO_DATA":
-                            App.State.Morphology.Segments = []
-                            for (var segment in data.segments) {
-                                var points = data.segments[segment];
-                                for (var index in points) {
-                                    var point = points[index];
-                                    points[index] = {
-                                        position: new BABYLON.Vector3(
-                                            point[0] * App.State.Morphology.Scale, 
-                                            point[1] * App.State.Morphology.Scale, 
-                                            point[2] * App.State.Morphology.Scale),
-                                        diameter: point[3] * App.State.Morphology.Scale
-                                    };
-                                }
-                                
-                                var entry = {
-                                    name: segment,
-                                    expanded: false,
-                                    points: data.segments[segment],
-                                    mesh: null
-                                }
-
-                                App.State.Morphology.Segments.push(entry);
+                    if (data.message == "GEO_DATA") {
+                        App.State.Morphology.Segments = []
+                        for (var segment in data.segments) {
+                            var points = data.segments[segment];
+                            for (var index in points) {
+                                var point = points[index];
+                                points[index] = {
+                                    position: new BABYLON.Vector3(
+                                        point[0] * App.State.Morphology.Scale, 
+                                        point[1] * App.State.Morphology.Scale, 
+                                        point[2] * App.State.Morphology.Scale),
+                                    diameter: point[3] * App.State.Morphology.Scale
+                                };
                             }
-                            App.State.Morphology.RedrawRequired = true;
-                            break;
+                            
+                            var entry = {
+                                name: segment,
+                                expanded: false,
+                                points: data.segments[segment],
+                                mesh: null
+                            }
+
+                            App.State.Morphology.Segments.push(entry);
+                        }
+                        App.State.Morphology.RedrawRequired = true;
                     }
                 }
                 catch(err) {
@@ -245,7 +285,7 @@ var App = new Vue({
                             tube.material = this.State.GlowMat;
                         }
                     } else {
-                        tube.material = this.State.IdleMat
+                        tube.material = this.State.GradientMaterial;
                     }
 
                     segment.mesh = tube;
