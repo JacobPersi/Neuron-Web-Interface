@@ -9,41 +9,72 @@
 <body class="w-full h-full m-0 p-0 overflow-hidden rounded-md bg-stone-900">
     <div id="app-root" class="w-full h-full text-white">
 
-        <div id="topbar" class="w-full rounded-lg bg-stone-800 rounded-b-none grid place-items-center pb-5" style="height: 10%">
+        <div id="header" class="w-full rounded-lg bg-stone-800 rounded-b-none grid place-items-center pb-5" style="height: 10%">
             <div class="w-128 text-3xl font-bold font-mono">> NeuronSim</div>
             <div class="w-128 text-xl">
-                <button class="bg-red hover:bg-red-400 text-white text-sm py-1 px-2 rounded" @click="SetView('Morphology')">
-                    Morphology
-                </button>
-                -
-                <button class="bg-pink hover:bg-pink-400 text-white text-sm py-1 px-2 rounded" @click="SetView('Biophysics')">
-                    Biophysics
-                </button>
-                -
-                <button class="bg-purple hover:bg-purple-400 text-white text-sm py-1 px-2 rounded" @click="SetView('Simulation')">
-                    Simulation
-                </button>
-                -
-                <button class="bg-deep-purple hover:bg-deep-purple-400 text-white text-sm py-1 px-2 rounded" @click="SetView('Visualization')">
-                    Visualization
-                </button>
+                <button class="bg-red text-white text-sm py-1 px-2 rounded">Morphology</button>
+                <button class="bg-pink text-white text-sm py-1 px-2 rounded">Biophysics</button>
+                <button class="bg-purple text-white text-sm py-1 px-2 rounded">Simulation</button>
+                <button class="bg-deep-purple text-white text-sm py-1 px-2 rounded">Visualization</button>
             </div>
         </div>
 
-        <div class="flex w-full" style="height: 90%">
-            <div id="left-sidebar" class="h-full m-4 overflow-y-scroll scrollbar" style="width: 25%">
-                
-                <div class="w-full mt-2">Active Mode:&nbsp;&nbsp;&nbsp;&nbsp;
-                    <span class="rounded px-2 py-1" 
-                    :class="{ 'bg-red': State.ActiveView == 'Morphology', 'bg-pink': State.ActiveView == 'Biophysics', 'bg-purple': State.ActiveView == 'Simulation', 'bg-deep-purple': State.ActiveView == 'Visualization' }">
-                        {{State.ActiveView}}
-                    </span> 
-                </div>
-                <br/>
+        <div id="content" class="flex w-full" style="height: 90%">
+            
+            <div id="left-sidebar" class="h-full flex flex-col" style="width: 25%">
 
-                <!-- Morphology: -->
-                <div v-if="State.ActiveView == 'Morphology'">
-                    <!-- Sidebar Buttons: -->
+                <div class="bg-stone-700 rounded-lg m-1 mt-2 p-2 grid grid-col-1">
+                    <span class="bg-red text-white text-base py-1 px-2 mx-28 rounded"><b>1.</b> Define Cellular Structure</span>
+                    <span class="pt-1 text-sm indent-8">In Neuron, cells are made up of a series of connected points, known as <b>segments.</b> To define a new segment, please click the 'New Segment' button below.</span>
+                    <span class="pt-1 text-sm indent-8">Segments detemrine the morphology of the cell. For instance a single neuron model may unique segments for each of the dendritic paths, the cell body, and axon.</span>
+                    <span class="pt-1 text-sm indent-8">To define new points, please ensure you have a segment selected and then <b>right-click</b> within the 3D viewport.</span>
+                </div>
+
+                <div class="rounded-lg m-1 mt-2">
+                    <div class="w-36 py-1 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-bold rounded cursor-pointer text-center" @click="NewSegment()">
+                        <i class="fa-solid fa-plus"></i>&nbsp;New Segment
+                    </div>
+                </div>
+
+                <div class="scrollbar overflow-y-scroll flex-grow mb-2">
+
+                    <div v-if="Morphology.ActiveSegment != -1" class="bg-stone-800 p-2 mx-1 mr-2 my-2 rounded text-sm grid grid-col-1">
+                        <div class="w-full relative mb-2">
+                            <span>Active Segment:</span>
+                            <i class="absolute pr-2 right-0 fa-solid fa-trash cursor-pointer my-1" @click="DeleteSegment(Morphology.ActiveSegment)"></i>
+                        </div>
+                        <div class="pl-4">
+                            <span>Name:</span>
+                            <input class="text-black w-12 h-5 mx-2 rounded px-2 w-32 border-white border" 
+                                v-model="Morphology.Segments[Morphology.ActiveSegment].name" />
+                        </div>
+                        <div class="pl-4 mt-1">
+                            <span>Points:</span>
+                            <div class="bg-black rounded-lg my-1 p-1 h-24">
+                                <div class="overflow-y-scroll scrollbar h-full relative">
+                                    <div v-for="(point, index) in Morphology.Segments[Morphology.ActiveSegment].points" class="my-2">
+                                        {{index}}.&nbsp;&nbsp;&nbsp;
+                                        X: <input class="text-black h-5 mx-2 rounded px-2 w-12 border-white border" v-model="point.position.x" />
+                                        Y: <input class="text-black h-5 mx-2 rounded px-2 w-12 border-white border" v-model="point.position.y" />
+                                        Z: <input class="text-black h-5 mx-2 rounded px-2 w-12 border-white border" v-model="point.position.z" />
+                                        D: <input class="text-black h-5 mx-2 rounded px-2 w-12 border-white border" v-model="point.diameter" />
+                                        <i class="absolute right-0 pr-4 fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint(index)"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-stone-800 p-2 mx-1 my-2 mr-2 rounded text-sm" 
+                        v-for="(segment, index) in Morphology.Segments" v-if="index != Morphology.ActiveSegment">
+                        <div class="w-full relative">
+                            <span>Segment {{index + 1}}:&nbsp;&nbsp;<b>{{segment.name}}</b></span>
+                            <i class="absolute pr-2 right-0 fa-solid fa-caret-down cursor-pointer my-1" @click="ExpandSegment(index)"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- 
+                <div v-if="">
                     <button class="bg-zinc-600 hover:bg-zinc-500 text-white text-sm py-1 px-2 rounded"
                         @click="_pullData()">
                         Load Cell
@@ -57,7 +88,6 @@
                         Clear Scene
                     </button>
 
-                    <!-- Render active segment: -->
                     <div v-if="State.Morphology.ActiveSegment != null" class="bg-stone-600 p-1 pl-2 mr-3 my-2 rounded">
                         Name: <input v-model="State.Morphology.ActiveSegment.name" class="text-black px-1" />
                         <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-up cursor-pointer" @click="CollapseSegment($event, State.Morphology.ActiveSegment)"></i>
@@ -75,7 +105,6 @@
                         </div>
                     </div>
 
-                    <!-- Render inactive segments: -->
                     <div v-for="segment in State.Morphology.Segments" class="bg-stone-800 p-1 pl-2 mr-3 my-2 rounded" v-if="State.Morphology.ActiveSegment != segment">
                         <span class="font-bold">{{ segment.name }}</span>
                         <span> [{{ segment.points.length}} points] </span>
@@ -83,7 +112,6 @@
                     </div>
 
                 </div>
-                <!-- Biophyiscs: -->
                 <div v-if="State.ActiveView == 'Biophysics'">
                     <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
                         <span class="font-bold">Global Celluar Kinetics:</span><br/>
@@ -121,7 +149,6 @@
                         <input v-model="State.Biophysics.e" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
                     </div>
                 </div>
-                <!-- Recording: -->
                 <div v-if="State.ActiveView == 'Simulation'">
                     <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
                         <span class="font-bold">Stimulus:</span>
@@ -167,10 +194,11 @@
                         Run Simulation
                     </button>   
                 </div>
+            -->
 
             </div>
 
-            <canvas id="render-canvas" class="h-full bg-black rounded-lg" style="width: 60%"></canvas>
+            <canvas id="babylon-canvas" class="h-full bg-black rounded-lg ml-2" style="width: 60%"></canvas>
 
             <div id="right-sidebar" class="h-full" style="width: 15%">
             </div>
@@ -208,7 +236,7 @@
     <!-- <script src="https://cdn.babylonjs.com/viewer/babylon.viewer.max.js"></script> -->
    
     <!-- Custom:  -->
-    <script src="user-interface.js"></script>
+    <script src="application.js"></script>
 
 </body>
 </html>

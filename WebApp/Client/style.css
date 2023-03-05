@@ -5,17 +5,22 @@
 .scrollbar::-webkit-scrollbar-track {
     border-radius: 100vh;
     background: #292524;
+    margin: 2px;
 }
 .scrollbar::-webkit-scrollbar-thumb {
     background: #52525B;
     border-radius: 100vh;
-    border: 3px solid #000;
+    border: 1px solid #000;
 }
 .scrollbar::-webkit-scrollbar-thumb:hover {
     background: #71717A;
 }
+
 .bg-red {
     background: #f44336;
+} 
+.text-red {
+    color: #f44336;
 } 
 .bg-pink {
     background: #e91e63;
