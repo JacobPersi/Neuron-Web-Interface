@@ -11,22 +11,26 @@
 
         <div id="header" class="w-full rounded-lg bg-stone-800 rounded-b-none grid place-items-center pb-5" style="height: 10%">
             <div class="w-128 text-3xl font-bold font-mono">> NeuronSim</div>
-            <div class="w-128 text-xl">
-                <button class="bg-red text-white text-sm py-1 px-2 rounded">Morphology</button>
-                <button class="bg-pink text-white text-sm py-1 px-2 rounded">Biophysics</button>
-                <button class="bg-purple text-white text-sm py-1 px-2 rounded">Simulation</button>
-                <button class="bg-deep-purple text-white text-sm py-1 px-2 rounded">Visualization</button>
+            <div class="w-128 text-xl flex">
+                <div class="bg-red text-white text-sm py-1 px-2 rounded">1. Morphology</div>
+                <div class="bg-zinc-600 bg-pink text-white text-sm py-1 px-2 ml-2 rounded">2. Biophysics</div>
+                <div class="bg-zinc-600 bg-purple text-white text-sm py-1 px-2 ml-2 rounded">3. Simulation</div>
+                <div class="bg-zinc-600 bg-deep-purple text-white text-sm py-1 px-2 ml-2 rounded">4. Visualization</div>
             </div>
         </div>
 
         <div id="content" class="flex w-full" style="height: 90%">
             
             <div id="left-sidebar" class="h-full flex flex-col" style="width: 25%">
-
-                <div class="bg-stone-700 rounded-lg m-1 mt-2 p-2 grid grid-col-1">
-                    <span class="bg-red text-white text-base py-1 px-2 mx-28 rounded"><b>1.</b> Define Cellular Structure</span>
-                    <span class="pt-1 text-sm indent-8">In Neuron, cells are made up of a series of connected points known as <b>segments.</b> To define a new segment, please click the 'New Segment' button below. The name of Segments are important, as this is how Neuron tracks information throughout the simulation. Please ensure each segment has a meaningful and unique name. </span>
-                    <span class="pt-1 text-sm indent-8">Segments help Neuron map the shape and connectivity of a cell. For instance a single neuron may be comprised of many unique segments, such as 1 for the cell body, 1 for the axon, and several for each dendritic and axonal branch. To define new points, please ensure you have a segment selected and then <b>right-click</b> within the 3D viewport.</span>
+                <div class="relative bg-stone-700 rounded-lg m-1 mt-2 p-2">
+                    <i class="absolute right-0 pr-3 pt-1 fa-solid cursor-pointer" :class="{ 'fa-caret-up': GUI.ShowHelp, 'fa-caret-down': !GUI.ShowHelp }" @click="ToggleHelp()"></i>
+                    <span class="bg-red text-white text-base py-1 px-2 mx-16 rounded"><b>1.1</b> Define Cellular Structure</span>
+                    <div v-if="GUI.ShowHelp" class="grid grid-col-1">
+                        <span class="pt-1 text-sm indent-8">In Neuron, cells are made up of a series of connected points known as <b>segments.</b> Segments help Neuron map the shape and connectivity of a cell. </span>
+                        <span class="pt-1 text-sm indent-8">For instance <b>a neuron is comprised of many segments</b>, such as the cell body, the axon, and segments for each for dendritic and axonal branch. </span>
+                        <span class="pt-1 text-sm indent-8">To define a new segment, please click the 'New Segment' button below. To define new points, please ensure you have a segment selected and then <b>right-click</b> within the 3D viewport. </span>
+                        <span class="pt-1 text-sm indent-8"><b>Segments names are important</b> as this is how the simulation engine tracks data flow. Please ensure each segment has a meaningful and unique name. </span>
+                    </div>
                 </div>
 
                 <div class="rounded-lg m-1 mt-2">
@@ -52,12 +56,12 @@
                             <div class="bg-black rounded-lg my-1 p-1 h-24">
                                 <div class="overflow-y-scroll scrollbar h-full relative">
                                     <div v-for="(point, index) in Morphology.Segments[Morphology.ActiveSegment].points" class="my-2">
-                                        {{index}}.&nbsp;&nbsp;&nbsp;
-                                        X: <input class="text-black h-5 mx-2 rounded px-2 w-12 border-white border" v-model="point.position.x" />
-                                        Y: <input class="text-black h-5 mx-2 rounded px-2 w-12 border-white border" v-model="point.position.y" />
-                                        Z: <input class="text-black h-5 mx-2 rounded px-2 w-12 border-white border" v-model="point.position.z" />
-                                        D: <input class="text-black h-5 mx-2 rounded px-2 w-12 border-white border" v-model="point.diameter" />
-                                        <i class="absolute right-0 pr-4 fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint(index)"></i>
+                                        <span class="w-3 overflow-hidden">{{index}}.&nbsp;</span>
+                                        X: <input class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" v-model="point.position.x" v-on:change="ReDraw" />
+                                        Y: <input class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" v-model="point.position.y" v-on:change="ReDraw" />
+                                        Z: <input class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" v-model="point.position.z" v-on:change="ReDraw" />
+                                        D: <input class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" v-model="point.diameter" v-on:change="ReDraw" />
+                                        <i class="absolute right-0 pr-2 fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint(index)"></i>
                                     </div>
                                 </div>
                             </div>
@@ -200,6 +204,9 @@
             <canvas id="babylon-canvas" class="h-full bg-black rounded-lg ml-2" style="width: 60%"></canvas>
 
             <div id="right-sidebar" class="h-full" style="width: 15%">
+                <div class="w-36 py-1 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-bold rounded cursor-pointer text-center" @click="NewSegment()">
+                    <i class="fa-solid fa-plus"></i>&nbsp;Next
+                </div>
             </div>
         </div>
         

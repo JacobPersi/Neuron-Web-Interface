@@ -14,6 +14,7 @@ var App = new Vue({
                 canvas: null, Engine: null, Scene: null, Camera: null, Light: null,
                 RenderScale: 0.1,
                 RedrawRequired: true,
+                ShowHelp: true,
             }, 
             Morphology: {
                 ActiveSegment: 0,
@@ -63,6 +64,24 @@ var App = new Vue({
         },
         PreDraw: function() {
             if (this.GUI.RedrawRequired == true) {
+                console.log("Redraw!");
+                for (var index in this.Morphology.Segments) {
+                    let segment = this.Morphology.Segments[index];
+
+                    if (segment.mesh != null) {
+                        segment.mesh.dispose();    
+                    }            
+
+                    if (segment.points.length > 1) {
+                        let path = [];
+                        for (var point_index in segment.points) {
+                            path.push(segment.points[point_index].position);
+                        }
+
+                        let tube = BABYLON.MeshBuilder.CreateTube("tube", { path: path, radius: 0.3 });
+                        segment.mesh = tube;
+                    }
+                }
                 this.DrawGrid(20);
                 this.GUI.RedrawRequired = false;
             }
@@ -98,11 +117,11 @@ var App = new Vue({
         DrawGrid: function(size) {
             let grid = BABYLON.MeshBuilder.CreateLines("lines", {
                 points: [
-                    new BABYLON.Vector3(-size, -30, -size),
-                    new BABYLON.Vector3(-size, -30, size),
-                    new BABYLON.Vector3(size, -30, size),
-                    new BABYLON.Vector3(size, -30, -size),
-                    new BABYLON.Vector3(-size, -30, -size)
+                    new BABYLON.Vector3(-size, 0, -size),
+                    new BABYLON.Vector3(-size, 0, size),
+                    new BABYLON.Vector3(size, 0, size),
+                    new BABYLON.Vector3(size, 0, -size),
+                    new BABYLON.Vector3(-size, 0, -size)
                 ]
             });
         },
@@ -121,15 +140,24 @@ var App = new Vue({
         DeleteSegment: function(index) {
             this.Morphology.Segments.splice(index, 1);
             this.Morphology.ActiveSegment = this.Morphology.Segments.length - 1;
+            this.ReDraw();
         },
         AddPointToActive: function(location) {
             this.Morphology.Segments[this.Morphology.ActiveSegment].points.push({
                 position: location, 
                 diameter: 1
             });
+            this.ReDraw();
         },
         DeletePoint: function(index) {
             this.Morphology.Segments[this.Morphology.ActiveSegment].points.splice(index, 1);
+            this.ReDraw();
+        }, 
+        ToggleHelp: function() {
+            this.GUI.ShowHelp = !this.GUI.ShowHelp; 
+        },
+        ReDraw: function() {
+            this.GUI.RedrawRequired = true;
         }
     },
     mounted() {
