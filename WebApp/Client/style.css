@@ -1,0 +1,36 @@
+.scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+.scrollbar::-webkit-scrollbar-track {
+    border-radius: 100vh;
+    background: #292524;
+    margin: 2px;
+}
+.scrollbar::-webkit-scrollbar-thumb {
+    background: #52525B;
+    border-radius: 100vh;
+    border: 1px solid #000;
+}
+.scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #71717A;
+}
+
+.bg-red {
+    background: #f44336;
+} 
+.text-red {
+    color: #f44336;
+} 
+.bg-pink {
+    background: #e91e63;
+}
+.bg-purple {
+    background: #9c27b0;
+}
+.bg-deep-purple {
+    background: #673ab7;
+}
+.bg-deep-purple-400 {
+    background: #7e57c2;
+}
