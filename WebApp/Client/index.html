@@ -12,7 +12,7 @@
         <div id="header" class="relative w-full rounded-lg bg-stone-800 rounded-b-none grid place-items-center pb-5" style="height: 10%">
             <div class="w-128 text-3xl mt-2 font-bold font-mono">> NeuronSim</div>
             <div class="w-128 text-xl flex">
-                <div class="bg-red text-white text-sm py-1 px-2 rounded">1. Morphology</div>
+                <div class="bg-red text-white text-sm py-1 px-2f rounded">1. Morphology</div>
                 <div :class="{ 'bg-zinc-600' : GUI.ActiveView < 1, 'bg-pink': GUI.ActiveView >= 1 }" class="text-white text-sm py-1 px-2 ml-2 rounded">2. Biophysics</div>
                 <div :class="{ 'bg-zinc-600' : GUI.ActiveView < 2, 'bg-purple': GUI.ActiveView >= 2 }" class="text-white text-sm py-1 px-2 ml-2 rounded">3. Simulation</div>
                 <div :class="{ 'bg-zinc-600' : GUI.ActiveView < 3, 'bg-deep-purple': GUI.ActiveView >= 3 }" class="text-white text-sm py-1 px-2 ml-2 rounded">4. Visualization</div>
@@ -82,10 +82,10 @@
                                             <span class="w-3 overflow-hidden">Size</span>
                                             <div v-for="(point, index) in Morphology.Segments[Morphology.ActiveSegment].points" class="my-2">
                                                 <span class="w-3 overflow-hidden">{{index}}.&nbsp;</span>
-                                                X: <input class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" v-model="point.position.x" v-on:change="ReDraw" />
-                                                Y: <input class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" v-model="point.position.y" v-on:change="ReDraw" />
-                                                Z: <input class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" v-model="point.position.z" v-on:change="ReDraw" />
-                                                D: <input class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" v-model="point.diameter" v-on:change="ReDraw" />
+                                                X: <input v-model.number="point.position.x" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" type="number" v-on:change="ReDraw" />
+                                                Y: <input v-model.number="point.position.y" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" type="number" v-on:change="ReDraw" />
+                                                Z: <input v-model.number="point.position.z" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" type="number" v-on:change="ReDraw" />
+                                                D: <input v-model.number="point.diameter" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" type="number" v-on:change="ReDraw" />
                                                 <i class="absolute right-0 pr-2 fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint(index)"></i>
                                             </div>
                                             
@@ -121,36 +121,36 @@
                         <span class="font-bold">Global Celluar Kinetics:</span><br/>
                         
                         <span class="ml-4">Axial Resistance (Ohm * cm):</span><br/>
-                        <input v-model="Biophysics.Ra" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        <input v-model.number="Biophysics.Ra" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
                         
                         <span class="ml-4">Membrane Capacitance (µ Farads / cm²):</span><br/>
-                        <input v-model="Biophysics.cm" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                        <input v-model.number="Biophysics.cm" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
                     </div>
 
                     <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
                         <span class="font-bold">Soma Hodgkin-Huxley Kinetics:</span><br/>
                         
                         <span class="ml-4">Sodium Conductance (S / cm²):</span><br/>
-                        <input v-model="Biophysics.gnabar" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        <input v-model.number="Biophysics.gnabar" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
                         
                         <span class="ml-4">Potassium Conductance (S / cm²):</span><br/>
-                        <input v-model="Biophysics.gkbar" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                        <input v-model.number="Biophysics.gkbar" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
                         
                         <span class="ml-4">Leak Conductance (S / cm²):</span><br/>
-                        <input v-model="Biophysics.gl" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                        <input v-model.number="Biophysics.gl" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
                         
                         <span class="ml-4">Reversal Potential (mV):</span><br/>
-                        <input v-model="Biophysics.el" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                        <input v-model.number="Biophysics.el" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
                     </div>
 
                     <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
                         <span class="font-bold">Dendritic Passive Kinetics:</span><br/>
 
                         <span class="ml-4">Passive Conductance (S / cm²):</span><br/>
-                        <input v-model="Biophysics.g" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        <input v-model.number="Biophysics.g" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
                         
                         <span class="ml-4">Leak Reversal Potential (mv):</span><br/>
-                        <input v-model="Biophysics.e" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                        <input v-model.number="Biophysics.e" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
                     </div>
                     
                 </div>
@@ -171,7 +171,7 @@
                     <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
                         <span class="font-bold">Stimulation:</span><br/>
                         <span class="ml-4">Initial Voltage (mV):</span><br/>
-                        <input v-model="Simulation.Recording.InitialVoltage" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        <input v-model.number="Simulation.Recording.InitialVoltage" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
 
                         <div class="pl-4 mt-1">
                             <span>Impulses:</span>
@@ -193,7 +193,7 @@
                     <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
                         <span class="font-bold">Recording:</span><br/>
                         <span class="ml-4">Simulation Length (ms):</span><br/>
-                        <input v-model="Simulation.Recording.Length" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        <input v-model.number="Simulation.Recording.Span" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
 
                         <div class="pl-4 mt-1">
                             <span>Traces:</span>
@@ -412,6 +412,7 @@
     <!-- <script src="https://cdn.babylonjs.com/viewer/babylon.viewer.max.js"></script> -->
    
     <!-- Custom:  -->
+    <script src="default_data.js"></script>
     <script src="application.js"></script>
 
 </body>

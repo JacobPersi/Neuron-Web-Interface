@@ -38,12 +38,13 @@ var App = new Vue({
                 },
                 Recording: {
                     InitialVoltage: -65,
-                    Length: 25,
+                    Span: 25,
                     Targets: [{
                         Segment: "axon", Location: 1,
                     }]
                 }
-            }
+            },
+            Visualization: {}
         }
     },
     methods: {
@@ -68,6 +69,7 @@ var App = new Vue({
             this.GUI.Scene.onBeforeRenderObservable.add(this.PreDraw);
             this.GUI.Engine.runRenderLoop(() => { this.GUI.Scene.render(); });
             window.addEventListener("resize", () => { this.GUI.Engine.resize(); });
+            console.log(DefaultData);
         },
         PreDraw: function() {
             if (this.GUI.RedrawRequired == true) {
@@ -79,24 +81,26 @@ var App = new Vue({
                         segment.mesh.dispose();    
                     }            
 
-                    if (segment.name == "soma" && segment.points != null && segment.points.length >= 2) {
-                        let firstPoint = segment.points[0].position;
-                        let lastPoint = segment.points[segment.points.length - 1].position;
-                        segment.mesh = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: BABYLON.Vector3.Distance(firstPoint, lastPoint) });
-                    }
-
                     if (segment.points.length > 1) {
                         let path = [];
                         for (var point_index in segment.points) {
                             path.push(segment.points[point_index].position);
                         }
                         
-                        segment.mesh = BABYLON.MeshBuilder.CreateTube("tube", { 
-                            path: path, 
-                            radius: 0.1, 
-                            cap: BABYLON.Mesh.CAP_ALL, 
-                            sideOrientation: BABYLON.Mesh.DOUBLESIDE 
+                        const extrusion = BABYLON.MeshBuilder.ExtrudeShapeCustom("pipe", {
+                            shape: [
+                                new BABYLON.Vector3(0, -1, 0),
+                                new BABYLON.Vector3(1, 0, 0),
+                                new BABYLON.Vector3(0, 1, 0),
+                                new BABYLON.Vector3(-1, 0, 0)
+                            ],
+                            closeShape: true,
+                            path: path,
+                            scaleFunction: (i, distance) => { return 0.1; },
+                            sideOrientation: BABYLON.Mesh.DOUBLESIDE,
+                            cap: BABYLON.Mesh.CAP_ALL,
                         });
+                        segment.mesh = extrusion;
                     }
                 }
                 this.DrawGrid(20);
@@ -163,7 +167,11 @@ var App = new Vue({
                 switch(data.message) {
                     case "EXAMPLE_DATA":
                         this.LoadSegmentData(data.segments);
-                      break;
+                        break;
+
+                    case "RENDER_DATA":
+                        this.RenderResult(data);
+                        break;
 
                     default:
                         console.log(data);
@@ -271,11 +279,18 @@ var App = new Vue({
             if (this.Connection.Connected && this.Connection.Socket.readyState === this.Connection.Socket.OPEN) {
                 this.Connection.Socket.send(JSON.stringify({
                     message: "RENDER", 
-                    data: {}
+                    data: {
+                        Biophysics: this.Biophysics, 
+                        Simulation: this.Simulation
+                    }
                 }));
             } else {
                 this.OnSocketError();
             }
+        },
+        RenderResult: function(data) {
+            this.Visualization = data;
+            console.log(data);
         }
     },
     mounted() {
