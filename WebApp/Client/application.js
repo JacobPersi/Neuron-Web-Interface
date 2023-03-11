@@ -51,42 +51,34 @@ var App = new Vue({
         InitializeCanvas: function() {
             this.GUI.Canvas = document.getElementById("babylon-canvas");
             this.GUI.Engine = new BABYLON.Engine(this.GUI.Canvas, true);
-
             this.GUI.Scene = new BABYLON.Scene(this.GUI.Engine);
             this.GUI.Scene.clearColor = new BABYLON.Color3(0.1,0.1,0.1);
-
             this.GUI.Camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 30, new BABYLON.Vector3(0, 0, 0));
             this.GUI.Camera.setPosition(new BABYLON.Vector3(25, 30, -25)); 
             this.GUI.Camera.attachControl(this.GUI.Canvas, true);
             this.GUI.Camera.wheelPrecision = 100; 
             this.GUI.Camera.lowerRadiusLimit = 30;
             this.GUI.Camera.upperRadiusLimit = 300;
-
             this.GUI.Light = new BABYLON.HemisphericLight("Light", new BABYLON.Vector3(0, 1, 0));
             this.GUI.Light.intensity = 0.7;
-
             this.GUI.Scene.onPointerObservable.add(this.PointerEvent);
             this.GUI.Scene.onBeforeRenderObservable.add(this.PreDraw);
             this.GUI.Engine.runRenderLoop(() => { this.GUI.Scene.render(); });
             window.addEventListener("resize", () => { this.GUI.Engine.resize(); });
-            console.log(DefaultData);
         },
         PreDraw: function() {
             if (this.GUI.RedrawRequired == true) {
                 console.log("Redraw!");
                 for (var index in this.Morphology.Segments) {
                     let segment = this.Morphology.Segments[index];
-
                     if (segment.mesh != null) {
                         segment.mesh.dispose();    
                     }            
-
                     if (segment.points.length > 1) {
                         let path = [];
                         for (var point_index in segment.points) {
                             path.push(segment.points[point_index].position);
                         }
-                        
                         const extrusion = BABYLON.MeshBuilder.ExtrudeShapeCustom("pipe", {
                             shape: [
                                 new BABYLON.Vector3(0, -1, 0),
@@ -156,19 +148,13 @@ var App = new Vue({
         },
         OnSocketOpen: function(event) {
             this.Connection.Connected = true;
-            this.LoadExample();
         },
         OnSocketMessage: function(event) {
             let data = event.data
             try {
                 data = JSON.parse(data);
                 data = JSON.parse(data[0]);
-
                 switch(data.message) {
-                    case "EXAMPLE_DATA":
-                        this.LoadSegmentData(data.segments);
-                        break;
-
                     case "RENDER_DATA":
                         this.RenderResult(data);
                         break;
@@ -176,8 +162,6 @@ var App = new Vue({
                     default:
                         console.log(data);
                   }
-                  
-
             } catch(err) {
                 console.log(err);
                 this.OnSocketError();
@@ -224,24 +208,12 @@ var App = new Vue({
         ReDraw: function() {
             this.GUI.RedrawRequired = true;
         },
-        LoadExample: function() {
-            if (this.Connection.Connected && this.Connection.Socket.readyState === this.Connection.Socket.OPEN) {
-                this.Connection.Socket.send(JSON.stringify({
-                    message: "LOAD_EXAMPLE", 
-                    data: {}
-                }));
-            } else {
-                this.OnSocketError();
-            }
-        },
         LoadSegmentData: function(segments) {
             this.ClearScene();
             for (var segment in segments) {
                 var points = segments[segment];
-
                 for (var index in points) {
                     var point = points[index];
-                    
                     points[index] = {
                         position: new BABYLON.Vector3(
                             point[0] * this.GUI.RenderScale, 
@@ -250,7 +222,6 @@ var App = new Vue({
                         diameter: point[3] * this.GUI.RenderScale
                     };
                 }
-                
                 this.Morphology.Segments.push({
                     name: segment,
                     points: segments[segment]
@@ -290,12 +261,12 @@ var App = new Vue({
         },
         RenderResult: function(data) {
             this.Visualization = data;
-            console.log(data);
         }
     },
     mounted() {
         this.InitializeCanvas();
         this.AttemptSocketConnection();
+        this.LoadSegmentData(DefaultData);
     }
 
 });

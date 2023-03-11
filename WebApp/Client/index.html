@@ -7,7 +7,8 @@
 </head>
 
 <body class="w-full h-full m-0 p-0 overflow-hidden rounded-md bg-stone-900">
-    <div id="app-root" class="w-full h-full text-white">
+
+    <div id="app-root" class="w-full h-full text-white" >
 
         <div id="header" class="relative w-full rounded-lg bg-stone-800 rounded-b-none grid place-items-center pb-5" style="height: 10%">
             <div class="w-128 text-3xl mt-2 font-bold font-mono">> NeuronSim</div>
@@ -30,7 +31,8 @@
             <div id="left-sidebar" class="h-full flex flex-col" style="width: 25%">
 
                 <!-- Morphology: -->
-                <div v-if="GUI.ActiveView == 0">
+                <div v-if="GUI.ActiveView == 0" class="h-full grid grid-cols-1">
+                    
                     <!-- Helper Text:  -->
                     <div class="relative bg-stone-700 rounded-lg m-1 mt-2 p-2 grid">
                         <i class="absolute right-0 pr-3 pt-2 fa-solid cursor-pointer" :class="{ 'fa-caret-up': GUI.ShowHelp, 'fa-caret-down': !GUI.ShowHelp }" @click="ToggleHelp()"></i>
@@ -60,7 +62,7 @@
                     -->
 
                     <!-- Segment Views:  -->
-                    <div class="overflow-y-scroll scrollbar grow">
+                    <div class="overflow-y-scroll scrollbar">
                         <div class="mb-2" v-for="(segment, index) in Morphology.Segments" >
                             <div v-if="index == Morphology.ActiveSegment" class="bg-stone-800 p-2 mx-1 mr-2 my-2 rounded text-sm grid grid-col-1">
                                 <div class="w-full relative mb-2">
@@ -77,15 +79,20 @@
                                     <div class="bg-black rounded-lg my-1 p-1 h-24">
                                         <div class="overflow-y-scroll scrollbar h-full relative">
                                         
-                                            <span class="w-3 overflow-hidden">Index</span>
-                                            <span class="w-3 overflow-hidden">Position</span>
-                                            <span class="w-3 overflow-hidden">Size</span>
-                                            <div v-for="(point, index) in Morphology.Segments[Morphology.ActiveSegment].points" class="my-2">
-                                                <span class="w-3 overflow-hidden">{{index}}.&nbsp;</span>
-                                                X: <input v-model.number="point.position.x" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" type="number" v-on:change="ReDraw" />
-                                                Y: <input v-model.number="point.position.y" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" type="number" v-on:change="ReDraw" />
-                                                Z: <input v-model.number="point.position.z" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" type="number" v-on:change="ReDraw" />
-                                                D: <input v-model.number="point.diameter" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border" type="number" v-on:change="ReDraw" />
+                                            <div class="grid grid-cols-4">
+                                                <span class="col-span-1 w-full overflow-hidden">Index</span>
+                                                <span class="col-span-2 w-full overflow-hidden">Position</span>
+                                                <span class="col-span-1 w-full overflow-hidden">Size</span>
+                                            </div>
+
+                                            <div v-for="(point, index) in Morphology.Segments[Morphology.ActiveSegment].points" class="my-2 grid grid-cols-10 gap-2">
+
+                                                <div class="col-span-1 w-full"><span class="w-3 overflow-hidden">{{index}}.&nbsp;</span></div>
+                                                <div class="col-span-2 w-full">X: <input v-model.number="point.position.x" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" v-on:change="ReDraw" /></div>
+                                                <div class="col-span-2 w-full">Y: <input v-model.number="point.position.y" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" v-on:change="ReDraw" /></div>
+                                                <div class="col-span-2 w-full">Z: <input v-model.number="point.position.z" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" v-on:change="ReDraw" /></div>
+                                                <div class="col-span-2 w-full">D: <input v-model.number="point.diameter" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" v-on:change="ReDraw" /></div>
+                                                
                                                 <i class="absolute right-0 pr-2 fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint(index)"></i>
                                             </div>
                                             
@@ -178,12 +185,11 @@
                             <div class="bg-black rounded-lg my-1 p-1 h-24">
                                 <div class="overflow-y-scroll scrollbar h-full relative">
                                     <div v-for="(target, index) in Simulation.Stimulation.Targets" class="my-2">
-                                            <span>{{target.Segment}}</span>
-                                            <span>{{target.Location}}</span>
-                                            <span>{{target.Delay}}</span>
-                                            <span>{{target.Duration}}</span>
-                                            <span>{{target.Amplitude}}</span>
-                                            <i class="absolute pr-2 right-0 fa-solid fa-caret-down cursor-pointer my-1"></i>
+                                        Target: <input v-model="target.Segment" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
+                                        Location: <input v-model="target.Location" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
+                                        Delay: <input v-model="target.Delay" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
+                                        Duration: <input v-model="target.Duration" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
+                                        Amplitude: <input v-model="target.Amplitude" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
                                     </div>
                                 </div>
                             </div>
@@ -200,9 +206,8 @@
                             <div class="bg-black rounded-lg my-1 p-1 h-24">
                                 <div class="overflow-y-scroll scrollbar h-full relative">
                                     <div v-for="(target, index) in Simulation.Recording.Targets" class="my-2">
-                                        <span>{{target.Segment}}</span>
-                                        <span>{{target.Location}}</span>
-                                        <i class="absolute pr-2 right-0 fa-solid fa-caret-down cursor-pointer my-1"></i>
+                                        Segment: <input v-model="target.Segment" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
+                                        Location: <input v-model="target.Location" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
                                     </div>
                                 </div>
                             </div>
@@ -231,134 +236,9 @@
                     </div>
 
                 </div>
-                
-                <!-- 
-                <div v-if="">
-                    <button class="bg-zinc-600 hover:bg-zinc-500 text-white text-sm py-1 px-2 rounded"
-                        @click="_pullData()">
-                        Load Cell
-                    </button>   
-                    <button class="bg-zinc-600 hover:bg-zinc-500 text-white text-sm py-1 px-2 rounded"
-                        @click="NewSegment()">
-                        New Segment
-                    </button>   
-                    <button class="bg-zinc-600 hover:bg-zinc-500 text-white text-sm py-1 px-2 rounded"
-                        @click="NewCell()">
-                        Clear Scene
-                    </button>
-
-                    <div v-if="State.Morphology.ActiveSegment != null" class="bg-stone-600 p-1 pl-2 mr-3 my-2 rounded">
-                        Name: <input v-model="State.Morphology.ActiveSegment.name" class="text-black px-1" />
-                        <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-up cursor-pointer" @click="CollapseSegment($event, State.Morphology.ActiveSegment)"></i>
-                        <br/>
-
-                        <div class="w-full h-32 overflow-y-scroll scrollbar">
-                            <div v-for="(point, index) in State.Morphology.ActiveSegment.points" class="flex py-1">
-                                X: <input v-model="point.position.x" class="text-black w-12 h-6 mx-2" />
-                                Y: <input v-model="point.position.y" class="text-black w-12 h-6 mx-2" />
-                                Z: <input v-model="point.position.z" class="text-black w-12 h-6 mx-2" />
-                                D: <input v-model="point.diameter" class="text-black w-12 h-6 mx-2" />
-
-                                <i class="fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint($event, State.Morphology.ActiveSegment, index)"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div v-for="segment in State.Morphology.Segments" class="bg-stone-800 p-1 pl-2 mr-3 my-2 rounded" v-if="State.Morphology.ActiveSegment != segment">
-                        <span class="font-bold">{{ segment.name }}</span>
-                        <span> [{{ segment.points.length}} points] </span>
-                        <i class="fa-solid fa-caret-up r-0 w-8 h-8 fa-caret-down cursor-pointer" @click="CollapseSegment($event, segment)"></i>
-                    </div>
-
-                </div>
-                <div v-if="State.ActiveView == 'Biophysics'">
-                    <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
-                        <span class="font-bold">Global Celluar Kinetics:</span><br/>
-                        
-                        <span class="ml-4">Axial Resistance (Ohm * cm):</span><br/>
-                        <input v-model="State.Biophysics.Ra" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
-                        
-                        <span class="ml-4">Membrane Capacitance (µ Farads / cm²):</span><br/>
-                        <input v-model="State.Biophysics.cm" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
-                    </div>
-
-                    <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
-                        <span class="font-bold">Soma Hodgkin-Huxley Kinetics:</span><br/>
-                        
-                        <span class="ml-4">Sodium Conductance (S / cm²):</span><br/>
-                        <input v-model="State.Biophysics.gnabar" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
-                        
-                        <span class="ml-4">Potassium Conductance (S / cm²):</span><br/>
-                        <input v-model="State.Biophysics.gkbar" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
-                        
-                        <span class="ml-4">Leak Conductance (S / cm²):</span><br/>
-                        <input v-model="State.Biophysics.gl" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
-                        
-                        <span class="ml-4">Reversal Potential (mV):</span><br/>
-                        <input v-model="State.Biophysics.el" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
-                    </div>
-
-                    <div class="bg-zinc-600 p-1 pl-2 mr-3 rounded text-sm">
-                        <span class="font-bold">Dendritic Passive Kinetics:</span><br/>
-
-                        <span class="ml-4">Passive Conductance (S / cm²):</span><br/>
-                        <input v-model="State.Biophysics.g" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
-                        
-                        <span class="ml-4">Leak Reversal Potential (mv):</span><br/>
-                        <input v-model="State.Biophysics.e" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
-                    </div>
-                </div>
-                <div v-if="State.ActiveView == 'Simulation'">
-                    <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
-                        <span class="font-bold">Stimulus:</span>
-                        <i class="fa-solid fa-plus pl-60 r-0 w-8 h-8 cursor-pointer" @click=""></i>
-
-                        <br/>
-                        <div class="w-64">
-                            <span class="ml-4 w-48">Segment:</span>
-                            <input v-model="State.Simulation.Stimulation.Segment" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
-
-                            <span class="ml-4 w-48">Location:</span>
-                            <input v-model="State.Simulation.Stimulation.Location" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
-
-                            <span class="ml-4 w-48">Delay:</span>
-                            <input v-model="State.Simulation.Stimulation.Delay" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
-
-                            <span class="ml-4 w-48">Duration:</span>
-                            <input v-model="State.Simulation.Stimulation.Duration" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
-
-                            <span class="ml-4 w-48">Amplitude:</span>
-                            <input v-model="State.Simulation.Stimulation.Amplitude" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
-                        </div>
-
-                    </div>
-                    <div class="bg-zinc-600 p-1 pl-2 mr-3 mb-4 rounded text-sm">
-                        <span class="font-bold">Trace:</span>
-                        <i class="fa-solid fa-plus pl-64 r-0 w-8 h-8 cursor-pointer" @click=""></i>
-
-                        <br/>
-                        <div class="w-64">
-                            <span class="ml-4 w-48">Segment:</span>
-                            <input v-model="State.Simulation.Recording.Segment" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
-
-                            <span class="ml-4 w-48">Location:</span>
-                            <input v-model="State.Simulation.Recording.Location" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
-                        </div>
-                    </div>
-                </div>
-
-                <div v-if="State.ActiveView == 'Visualization'">
-                    <button class="bg-zinc-600 hover:bg-zinc-500 text-white text-sm py-1 px-2 rounded"
-                        @click="RunSimulation()">
-                        Run Simulation
-                    </button>   
-                </div>
-            -->
 
             </div>
-
             <canvas id="babylon-canvas" class="h-full bg-black rounded-lg ml-2" style="width: 60%"></canvas>
-
             <div id="right-sidebar" class="h-full" style="width: 15%">
 
                 <div class="mx-2 my-2 grid grid-cols-2 gap-2">
