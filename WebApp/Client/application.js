@@ -22,8 +22,8 @@ var App = new Vue({
                 ShowHelp: true,
             }, 
             Morphology: {
-                ActiveSegment: 0,
-                Segments: [],
+                ActiveSection: -1,
+                Sections: [],
                 Topology: [{ source: 'soma', destination: 'dendrite[0]' }]
             },
             Biophysics: {
@@ -32,7 +32,7 @@ var App = new Vue({
             Simulation: {
                 Stimulation: {
                     Targets: [{
-                        Segment: "soma", Location: 0, 
+                        Section: "soma", Location: 0, 
                         Delay: 5, Duration: 1,  Amplitude: 0.1
                     }]
                 },
@@ -40,7 +40,7 @@ var App = new Vue({
                     InitialVoltage: -65,
                     Span: 25,
                     Targets: [{
-                        Segment: "axon", Location: 1,
+                        Section: "axon", Location: 1,
                     }]
                 }
             },
@@ -61,6 +61,14 @@ var App = new Vue({
             this.GUI.Camera.upperRadiusLimit = 300;
             this.GUI.Light = new BABYLON.HemisphericLight("Light", new BABYLON.Vector3(0, 1, 0));
             this.GUI.Light.intensity = 0.7;
+
+            this.GUI.DefaultMaterial = new BABYLON.StandardMaterial("DefaultMaterial");
+            this.GUI.ActiveElementMaterial = new BABYLON.StandardMaterial("ActiveElementMaterial");
+            this.GUI.ActiveElementMaterial.diffuseColor = new BABYLON.Color3(1, 0, 1);
+            this.GUI.ActiveElementMaterial.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
+            this.GUI.ActiveElementMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
+            this.GUI.ActiveElementMaterial.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
+            
             this.GUI.Scene.onPointerObservable.add(this.PointerEvent);
             this.GUI.Scene.onBeforeRenderObservable.add(this.PreDraw);
             this.GUI.Engine.runRenderLoop(() => { this.GUI.Scene.render(); });
@@ -69,15 +77,15 @@ var App = new Vue({
         PreDraw: function() {
             if (this.GUI.RedrawRequired == true) {
                 console.log("Redraw!");
-                for (var index in this.Morphology.Segments) {
-                    let segment = this.Morphology.Segments[index];
-                    if (segment.mesh != null) {
-                        segment.mesh.dispose();    
+                for (var index in this.Morphology.Sections) {
+                    let section = this.Morphology.Sections[index];
+                    if (section.mesh != null) {
+                        section.mesh.dispose();    
                     }            
-                    if (segment.points.length > 1) {
+                    if (section.points.length > 1) {
                         let path = [];
-                        for (var point_index in segment.points) {
-                            path.push(segment.points[point_index].position);
+                        for (var point_index in section.points) {
+                            path.push(section.points[point_index].position);
                         }
                         const extrusion = BABYLON.MeshBuilder.ExtrudeShapeCustom("pipe", {
                             shape: [
@@ -92,7 +100,7 @@ var App = new Vue({
                             sideOrientation: BABYLON.Mesh.DOUBLESIDE,
                             cap: BABYLON.Mesh.CAP_ALL,
                         });
-                        segment.mesh = extrusion;
+                        section.mesh = extrusion;
                     }
                 }
                 this.DrawGrid(20);
@@ -103,17 +111,20 @@ var App = new Vue({
             switch (pointerInfo.type) {
                 case BABYLON.PointerEventTypes.POINTERUP:
                     if (pointerInfo.event.button == 2) {
-                        //this.CanvasRightClick(pointerInfo);
+                        this.CanvasRightClick(pointerInfo);
                     } 
                     break;
             }
         },
         CanvasRightClick: function(pointerInfo) {
-            if (this.Morphology.ActiveSegment != -1) {
+            if (this.Morphology.ActiveSection != -1) {
+                debugger; 
                 let position = null;
                 let pickinfo = this.GUI.Scene.pick(this.GUI.Scene.pointerX, this.GUI.Scene.pointerY);
+
                 if (pickinfo.hit) {
                     position = pickinfo.pickedPoint;
+
                 } else {
                     let distance = this.GUI.Camera.radius;
                     position = new BABYLON.Vector3(
@@ -122,6 +133,7 @@ var App = new Vue({
                         pickinfo.ray.origin.z + pickinfo.ray.direction.z * distance
                     );
                 }
+
                 if (position != null) {
                     this.AddPointToActive(position);
                 }
@@ -171,35 +183,44 @@ var App = new Vue({
             this.Connection.Connected = false;
             this.Connection.LastAttempt = new Date();
         },
-        NewSegment: function() {
-            this.Morphology.Segments.push({
-                name: 'new[' + (this.Morphology.Segments.length + 1) + ']',
+        SetActiveSection: function(index) {
+            if (this.Morphology.ActiveSection != -1 && this.Morphology.Sections[this.Morphology.ActiveSection].mesh != null) {
+                this.Morphology.Sections[this.Morphology.ActiveSection].mesh.material = this.GUI.DefaultMaterial;
+            }
+            this.Morphology.ActiveSection = index;
+            if(this.Morphology.Sections[this.Morphology.ActiveSection].mesh != null) {
+                this.Morphology.Sections[this.Morphology.ActiveSection].mesh.material = this.GUI.ActiveElementMaterial;
+            }
+        },
+        NewSection: function() {
+            this.Morphology.Sections.push({
+                name: 'new[' + (this.Morphology.Sections.length + 1) + ']',
                 points: []
             });
-            if (this.Morphology.ActiveSegment == -1) {
-                this.Morphology.ActiveSegment = 0;
+            if (this.Morphology.ActiveSection == -1) {
+                this.SetActiveSection(0);
             }
         },
-        ExpandSegment: function(index) {
-            this.Morphology.ActiveSegment = index;
+        ExpandSection: function(index) {
+            this.SetActiveSection(index);
         },
-        DeleteSegment: function(index) {
-            if (this.Morphology.Segments[index].mesh != null) {
-                this.Morphology.Segments[index].mesh.dispose();   
+        DeleteSection: function(index) {
+            if (this.Morphology.Sections[index].mesh != null) {
+                this.Morphology.Sections[index].mesh.dispose();   
             }
-            this.Morphology.Segments.splice(index, 1);
-            this.Morphology.ActiveSegment = this.Morphology.Segments.length - 1;
+            this.Morphology.Sections.splice(index, 1);
+            this.SetActiveSection(this.Morphology.Sections.length - 1);
             this.ReDraw();
         },
         AddPointToActive: function(location) {
-            this.Morphology.Segments[this.Morphology.ActiveSegment].points.push({
+            this.Morphology.Sections[this.Morphology.ActiveSection].points.push({
                 position: location, 
                 diameter: 1
             });
             this.ReDraw();
         },
         DeletePoint: function(index) {
-            this.Morphology.Segments[this.Morphology.ActiveSegment].points.splice(index, 1);
+            this.Morphology.Sections[this.Morphology.ActiveSection].points.splice(index, 1);
             this.ReDraw();
         }, 
         ToggleHelp: function() {
@@ -208,10 +229,10 @@ var App = new Vue({
         ReDraw: function() {
             this.GUI.RedrawRequired = true;
         },
-        LoadSegmentData: function(segments) {
+        LoadSectionData: function(sections) {
             this.ClearScene();
-            for (var segment in segments) {
-                var points = segments[segment];
+            for (var section in sections) {
+                var points = sections[section];
                 for (var index in points) {
                     var point = points[index];
                     points[index] = {
@@ -222,17 +243,18 @@ var App = new Vue({
                         diameter: point[3] * this.GUI.RenderScale
                     };
                 }
-                this.Morphology.Segments.push({
-                    name: segment,
-                    points: segments[segment]
+                this.Morphology.Sections.push({
+                    name: section,
+                    points: sections[section]
                 });
             }
+            this.SetActiveSection(0);
             this.ReDraw();
         }, 
         ClearScene: function() {
-            while (this.Morphology.Segments.length > 0) {
-                for (let i = 0; i < this.Morphology.Segments.length; i++) {
-                    this.DeleteSegment(i);
+            while (this.Morphology.Sections.length > 0) {
+                for (let i = 0; i < this.Morphology.Sections.length; i++) {
+                    this.DeleteSection(i);
                 }
             }
         },
@@ -266,7 +288,7 @@ var App = new Vue({
     mounted() {
         this.InitializeCanvas();
         this.AttemptSocketConnection();
-        this.LoadSegmentData(DefaultData);
+        this.LoadSectionData(DefaultData);
     }
 
 });

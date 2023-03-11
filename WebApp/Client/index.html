@@ -39,18 +39,18 @@
                         <span class="bg-red text-white text-base py-1 px-2 w-58 rounded justify-self-center"><b>1.</b> Define Cellular Structure</span>
                         
                         <div v-if="GUI.ShowHelp" class="grid grid-col-1">
-                            <span class="pt-1 text-sm indent-8">In Neuron, cells are made up of a series of connected points known as <b>segments.</b> Segments help Neuron map the shape and connectivity of a cell. </span>
-                            <span class="pt-1 text-sm indent-8">For instance <b>a neuron is comprised of many segments</b>, such as the cell body, the axon, and segments for each for dendritic and axonal branch. </span>
-                            <span class="pt-1 text-sm indent-8">To define a new segment, please click the 'New Segment' button below. To define new points, please ensure you have a segment selected and then <b>right-click</b> within the 3D viewport. </span>
-                            <span class="pt-1 text-sm indent-8"><b>Segments names are important</b> as this is how the simulation engine tracks data flow. Please ensure each segment has a meaningful and unique name. </span>
+                            <span class="pt-1 text-sm indent-8">In Neuron, cells are made up of a series of connected points known as <b>sections.</b> Sections help Neuron map the shape and connectivity of a cell. </span>
+                            <span class="pt-1 text-sm indent-8">For instance <b>a neuron is comprised of many sections</b>, such as the cell body, the axon, and sections for each dendritic and axonal branch. </span>
+                            <!-- <span class="pt-1 text-sm indent-8">To define a new section, please click the 'New Section' button below. To define new points, please ensure you have a section selected and then <b>right-click</b> within the 3D viewport. </span> -->
+                            <span class="pt-1 text-sm indent-8"><b>Sections names are important</b> as this is how the simulation engine tracks data flow. Please ensure each section has a meaningful and unique name. </span>
                         </div>
                     </div>
 
                     <!-- Controls:  -->
                     <!-- 
                     <div class="m-1 mt-2 grid grid-cols-3 gap-2">
-                        <div class="py-1 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-bold rounded cursor-pointer text-center col-span-1" @click="NewSegment()">
-                            <i class="fa-solid fa-plus font-normal"></i>&nbsp;New Segment
+                        <div class="py-1 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-bold rounded cursor-pointer text-center col-span-1" @click="NewSection()">
+                            <i class="fa-solid fa-plus font-normal"></i>&nbsp;New Section
                         </div>
                         <div class="py-1 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-bold rounded cursor-pointer text-center col-span-1" @click="LoadExample()">
                             <i class="fa-solid fa-download font-normal"></i>&nbsp;Load Example
@@ -61,49 +61,44 @@
                     </div>
                     -->
 
-                    <!-- Segment Views:  -->
+                    <!-- Section Views:  -->
                     <div class="overflow-y-scroll scrollbar">
-                        <div class="mb-2" v-for="(segment, index) in Morphology.Segments" >
-                            <div v-if="index == Morphology.ActiveSegment" class="bg-stone-800 p-2 mx-1 mr-2 my-2 rounded text-sm grid grid-col-1">
+                        <div class="mb-2" v-for="(section, index) in Morphology.Sections" >
+                            <div v-if="index == Morphology.ActiveSection" class="bg-stone-800 p-2 mx-1 mr-2 my-2 rounded text-sm grid grid-col-1">
                                 <div class="w-full relative mb-2">
-                                    <span>Active Segment:</span>
-                                    <i class="absolute pr-2 right-0 fa-solid fa-trash cursor-pointer my-1" @click="DeleteSegment(Morphology.ActiveSegment)"></i>
+                                    <span>Active Section:</span>
+                                    <i class="absolute pr-2 right-0 fa-solid fa-trash cursor-pointer my-1" @click="DeleteSection(Morphology.ActiveSection)"></i>
                                 </div>
                                 <div class="pl-4">
                                     <span>Name:</span>
                                     <input class="text-black w-12 h-5 mx-2 rounded px-2 w-32 border-white border" 
-                                        v-model="Morphology.Segments[Morphology.ActiveSegment].name" />
+                                        v-model="Morphology.Sections[Morphology.ActiveSection].name" />
                                 </div>
                                 <div class="pl-4 mt-1">
                                     <span>Points:</span>
                                     <div class="bg-black rounded-lg my-1 p-1 h-24">
                                         <div class="overflow-y-scroll scrollbar h-full relative">
-                                        
-                                            <div class="grid grid-cols-4">
-                                                <span class="col-span-1 w-full overflow-hidden">Index</span>
-                                                <span class="col-span-2 w-full overflow-hidden">Position</span>
-                                                <span class="col-span-1 w-full overflow-hidden">Size</span>
+                                            <div class="my-2 grid grid-cols-10 gap-2">
+                                                <div class="col-span-3 w-full">Index.</span></div>
+                                                <div class="col-span-4 w-full">Position.</span></div>
+                                                <div class="col-span-1 w-full">Diameter.</span></div>
                                             </div>
-
-                                            <div v-for="(point, index) in Morphology.Segments[Morphology.ActiveSegment].points" class="my-2 grid grid-cols-10 gap-2">
-
+                                            <div v-for="(point, index) in Morphology.Sections[Morphology.ActiveSection].points" class="my-2 grid grid-cols-10 gap-2">
                                                 <div class="col-span-1 w-full"><span class="w-3 overflow-hidden">{{index}}.&nbsp;</span></div>
-                                                <div class="col-span-2 w-full">X: <input v-model.number="point.position.x" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" v-on:change="ReDraw" /></div>
-                                                <div class="col-span-2 w-full">Y: <input v-model.number="point.position.y" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" v-on:change="ReDraw" /></div>
-                                                <div class="col-span-2 w-full">Z: <input v-model.number="point.position.z" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" v-on:change="ReDraw" /></div>
-                                                <div class="col-span-2 w-full">D: <input v-model.number="point.diameter" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" v-on:change="ReDraw" /></div>
-                                                
+                                                <div class="col-span-2 w-full"><input v-model.number="point.position.x" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" v-on:change="ReDraw" /></div>
+                                                <div class="col-span-2 w-full"><input v-model.number="point.position.y" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" v-on:change="ReDraw" /></div>
+                                                <div class="col-span-2 w-full"><input v-model.number="point.position.z" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" v-on:change="ReDraw" /></div>
+                                                <div class="col-span-2 w-full"><input v-model.number="point.diameter" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" v-on:change="ReDraw" /></div>
                                                 <i class="absolute right-0 pr-2 fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint(index)"></i>
                                             </div>
-                                            
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="bg-stone-800 p-2 mx-1 my-2 mr-2 rounded text-sm" v-if="index != Morphology.ActiveSegment">
+                            <div class="bg-stone-800 p-2 mx-1 my-2 mr-2 rounded text-sm" v-if="index != Morphology.ActiveSection">
                                 <div class="w-full relative">
-                                    <span>Segment {{index + 1}}:&nbsp;&nbsp;<b>{{segment.name}}</b></span>
-                                    <i class="absolute pr-2 right-0 fa-solid fa-caret-down cursor-pointer my-1" @click="ExpandSegment(index)"></i>
+                                    <span>Section {{index + 1}}:&nbsp;&nbsp;<b>{{section.name}}</b></span>
+                                    <i class="absolute pr-2 right-0 fa-solid fa-caret-down cursor-pointer my-1" @click="ExpandSection(index)"></i>
                                 </div>
                             </div>
                         </div>
@@ -120,7 +115,7 @@
                         <span class="bg-pink text-white text-base py-1 px-2 w-58 rounded justify-self-center"><b>2.</b> Define Cellular Biophysics</span>
                         
                         <div v-if="GUI.ShowHelp" class="grid grid-col-1">
-                            <span class="pt-1 text-sm indent-8">In Neuron, cells are made up of a series of connected points known as <b>segments.</b> Segments help Neuron map the shape and connectivity of a cell. </span>
+                            <span class="pt-1 text-sm indent-8">In Neuron, cells are made up of a series of connected points known as <b>sections.</b> Sections help Neuron map the shape and connectivity of a cell. </span>
                         </div>
                     </div>
 
@@ -171,7 +166,7 @@
                         <span class="bg-purple text-white text-base py-1 px-2 w-58 rounded justify-self-center"><b>3.</b> Define Simulation Dynamics</span>
                         
                         <div v-if="GUI.ShowHelp" class="grid grid-col-1">
-                            <span class="pt-1 text-sm indent-8">In Neuron, cells are made up of a series of connected points known as <b>segments.</b> Segments help Neuron map the shape and connectivity of a cell. </span>
+                            <span class="pt-1 text-sm indent-8">In Neuron, cells are made up of a series of connected points known as <b>sections.</b> Sections help Neuron map the shape and connectivity of a cell. </span>
                         </div>
                     </div>
 
@@ -185,7 +180,7 @@
                             <div class="bg-black rounded-lg my-1 p-1 h-24">
                                 <div class="overflow-y-scroll scrollbar h-full relative">
                                     <div v-for="(target, index) in Simulation.Stimulation.Targets" class="my-2">
-                                        Target: <input v-model="target.Segment" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
+                                        Target: <input v-model="target.Section" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
                                         Location: <input v-model="target.Location" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
                                         Delay: <input v-model="target.Delay" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
                                         Duration: <input v-model="target.Duration" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
@@ -206,7 +201,7 @@
                             <div class="bg-black rounded-lg my-1 p-1 h-24">
                                 <div class="overflow-y-scroll scrollbar h-full relative">
                                     <div v-for="(target, index) in Simulation.Recording.Targets" class="my-2">
-                                        Segment: <input v-model="target.Segment" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
+                                        Section: <input v-model="target.Section" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
                                         Location: <input v-model="target.Location" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
                                     </div>
                                 </div>
@@ -225,7 +220,7 @@
                         <span class="bg-deep-purple text-white text-base py-1 px-2 w-58 rounded justify-self-center"><b>4.</b> View Simulation</span>
                         
                         <div v-if="GUI.ShowHelp" class="grid grid-col-1">
-                            <span class="pt-1 text-sm indent-8">In Neuron, cells are made up of a series of connected points known as <b>segments.</b> Segments help Neuron map the shape and connectivity of a cell. </span>
+                            <span class="pt-1 text-sm indent-8">In Neuron, cells are made up of a series of connected points known as <b>sections.</b> Sections help Neuron map the shape and connectivity of a cell. </span>
                         </div>
                     </div>
 
