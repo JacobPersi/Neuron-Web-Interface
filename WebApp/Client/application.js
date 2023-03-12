@@ -44,7 +44,10 @@ var App = new Vue({
                     }]
                 }
             },
-            Visualization: {}
+            Visualization: {
+                Points: 0,
+                Data: [],
+            }
         }
     },
     methods: {
@@ -62,7 +65,6 @@ var App = new Vue({
             this.GUI.Light = new BABYLON.HemisphericLight("Light", new BABYLON.Vector3(0, 1, 0));
             this.GUI.Light.intensity = 0.7;
 
-            this.GUI.DefaultMaterial = new BABYLON.StandardMaterial("DefaultMaterial");
             this.GUI.ActiveElementMaterial = new BABYLON.StandardMaterial("ActiveElementMaterial");
             this.GUI.ActiveElementMaterial.diffuseColor = new BABYLON.Color3(1, 0, 1);
             this.GUI.ActiveElementMaterial.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
@@ -101,6 +103,7 @@ var App = new Vue({
                             cap: BABYLON.Mesh.CAP_ALL,
                         });
                         section.mesh = extrusion;
+
                     }
                 }
                 this.DrawGrid(20);
@@ -111,14 +114,13 @@ var App = new Vue({
             switch (pointerInfo.type) {
                 case BABYLON.PointerEventTypes.POINTERUP:
                     if (pointerInfo.event.button == 2) {
-                        this.CanvasRightClick(pointerInfo);
+                        //this.CanvasRightClick(pointerInfo);
                     } 
                     break;
             }
         },
         CanvasRightClick: function(pointerInfo) {
             if (this.Morphology.ActiveSection != -1) {
-                debugger; 
                 let position = null;
                 let pickinfo = this.GUI.Scene.pick(this.GUI.Scene.pointerX, this.GUI.Scene.pointerY);
 
@@ -165,10 +167,9 @@ var App = new Vue({
             let data = event.data
             try {
                 data = JSON.parse(data);
-                data = JSON.parse(data[0]);
                 switch(data.message) {
                     case "RENDER_DATA":
-                        this.RenderResult(data);
+                        this.RenderResult(data.data);
                         break;
 
                     default:
@@ -185,7 +186,7 @@ var App = new Vue({
         },
         SetActiveSection: function(index) {
             if (this.Morphology.ActiveSection != -1 && this.Morphology.Sections[this.Morphology.ActiveSection].mesh != null) {
-                this.Morphology.Sections[this.Morphology.ActiveSection].mesh.material = this.GUI.DefaultMaterial;
+                this.Morphology.Sections[this.Morphology.ActiveSection].mesh.material = null;
             }
             this.Morphology.ActiveSection = index;
             if(this.Morphology.Sections[this.Morphology.ActiveSection].mesh != null) {
@@ -282,7 +283,33 @@ var App = new Vue({
             }
         },
         RenderResult: function(data) {
-            this.Visualization = data;
+            this.Visualization.Data = data;
+            this.Visualization.Points = data[0].voltage.length;
+        },
+        AddStimulus: function() {
+            this.Simulation.Stimulation.Targets.push({
+                Section: "...", Location: 0, 
+                Delay: 5, Duration: 1,  Amplitude: 0.1
+            });
+        },
+        DeleteStimulus: function(index) {
+            this.Simulation.Stimulation.Targets.splice(index, 1);
+        },
+        AddRecording: function() {
+            this.Simulation.Recording.Targets.push({
+                Section: "...", Location: 0
+            });
+        },
+        DeleteRecording: function(index) {
+            this.Simulation.Recording.Targets.splice(index, 1);
+        },
+        GetMeshByName: function(name) {
+            for (var i = 0; i < this.Morphology.Sections.length; i++) {
+                if (this.Morphology.Sections[i].name == name) 
+                    return this.Morphology.Sections[i].mesh;
+            }
+            return null;
+        
         }
     },
     mounted() {

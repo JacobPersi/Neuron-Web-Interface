@@ -13,7 +13,7 @@
         <div id="header" class="relative w-full rounded-lg bg-stone-800 rounded-b-none grid place-items-center pb-5" style="height: 10%">
             <div class="w-128 text-3xl mt-2 font-bold font-mono">> NeuronSim</div>
             <div class="w-128 text-xl flex">
-                <div class="bg-red text-white text-sm py-1 px-2f rounded">1. Morphology</div>
+                <div class="bg-red text-white text-sm py-1 px-2 rounded">1. Morphology</div>
                 <div :class="{ 'bg-zinc-600' : GUI.ActiveView < 1, 'bg-pink': GUI.ActiveView >= 1 }" class="text-white text-sm py-1 px-2 ml-2 rounded">2. Biophysics</div>
                 <div :class="{ 'bg-zinc-600' : GUI.ActiveView < 2, 'bg-purple': GUI.ActiveView >= 2 }" class="text-white text-sm py-1 px-2 ml-2 rounded">3. Simulation</div>
                 <div :class="{ 'bg-zinc-600' : GUI.ActiveView < 3, 'bg-deep-purple': GUI.ActiveView >= 3 }" class="text-white text-sm py-1 px-2 ml-2 rounded">4. Visualization</div>
@@ -28,7 +28,7 @@
         <div id="content" class="flex w-full" style="height: 90%">
 
             <!-- Left Sidebar:  -->
-            <div id="left-sidebar" class="h-full flex flex-col" style="width: 25%">
+            <div id="left-sidebar" class="h-full flex flex-col" style="width: 30%">
 
                 <!-- Morphology: -->
                 <div v-if="GUI.ActiveView == 0" class="h-full grid grid-cols-1">
@@ -40,7 +40,7 @@
                         
                         <div v-if="GUI.ShowHelp" class="grid grid-col-1">
                             <span class="pt-1 text-sm indent-8">In Neuron, cells are made up of a series of connected points known as <b>sections.</b> Sections help Neuron map the shape and connectivity of a cell. </span>
-                            <span class="pt-1 text-sm indent-8">For instance <b>a neuron is comprised of many sections</b>, such as the cell body, the axon, and sections for each dendritic and axonal branch. </span>
+                            <span class="pt-1 text-sm indent-8">For instance <b>a neuron may be comprised of many sections</b>, including the cell body, the axon, and many sections for each dendritic or axonal branch. </span>
                             <!-- <span class="pt-1 text-sm indent-8">To define a new section, please click the 'New Section' button below. To define new points, please ensure you have a section selected and then <b>right-click</b> within the 3D viewport. </span> -->
                             <span class="pt-1 text-sm indent-8"><b>Sections names are important</b> as this is how the simulation engine tracks data flow. Please ensure each section has a meaningful and unique name. </span>
                         </div>
@@ -79,9 +79,9 @@
                                     <div class="bg-black rounded-lg my-1 p-1 h-24">
                                         <div class="overflow-y-scroll scrollbar h-full relative">
                                             <div class="my-2 grid grid-cols-10 gap-2">
-                                                <div class="col-span-3 w-full">Index.</span></div>
-                                                <div class="col-span-4 w-full">Position.</span></div>
-                                                <div class="col-span-1 w-full">Diameter.</span></div>
+                                                <div class="col-span-1 w-full">ID</span></div>
+                                                <div class="col-span-6 w-full">Position (X, Y, Z)</span></div>
+                                                <div class="col-span-1 w-full">Diameter</span></div>
                                             </div>
                                             <div v-for="(point, index) in Morphology.Sections[Morphology.ActiveSection].points" class="my-2 grid grid-cols-10 gap-2">
                                                 <div class="col-span-1 w-full"><span class="w-3 overflow-hidden">{{index}}.&nbsp;</span></div>
@@ -107,7 +107,7 @@
                 </div>
 
                 <!-- Biophysics: -->
-                <div v-if="GUI.ActiveView == 1">
+                <div v-if="GUI.ActiveView == 1" class="h-full grid grid-cols-1">
 
                     <!-- Helper Text:  -->
                     <div class="relative bg-stone-700 rounded-lg m-1 mt-2 p-2 grid">
@@ -119,46 +119,48 @@
                         </div>
                     </div>
 
-                    <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
-                        <span class="font-bold">Global Celluar Kinetics:</span><br/>
-                        
-                        <span class="ml-4">Axial Resistance (Ohm * cm):</span><br/>
-                        <input v-model.number="Biophysics.Ra" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
-                        
-                        <span class="ml-4">Membrane Capacitance (µ Farads / cm²):</span><br/>
-                        <input v-model.number="Biophysics.cm" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
-                    </div>
+                    <div class="overflow-y-scroll scrollbar h-full relative">
+                        <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
+                            <span class="font-bold">Global Celluar Kinetics:</span><br/>
+                            
+                            <span class="ml-4">Axial Resistance (Ohm * cm):</span><br/>
+                            <input v-model.number="Biophysics.Ra" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                            
+                            <span class="ml-4">Membrane Capacitance (µ Farads / cm²):</span><br/>
+                            <input v-model.number="Biophysics.cm" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                        </div>
 
-                    <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
-                        <span class="font-bold">Soma Hodgkin-Huxley Kinetics:</span><br/>
-                        
-                        <span class="ml-4">Sodium Conductance (S / cm²):</span><br/>
-                        <input v-model.number="Biophysics.gnabar" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
-                        
-                        <span class="ml-4">Potassium Conductance (S / cm²):</span><br/>
-                        <input v-model.number="Biophysics.gkbar" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
-                        
-                        <span class="ml-4">Leak Conductance (S / cm²):</span><br/>
-                        <input v-model.number="Biophysics.gl" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
-                        
-                        <span class="ml-4">Reversal Potential (mV):</span><br/>
-                        <input v-model.number="Biophysics.el" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
-                    </div>
+                        <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
+                            <span class="font-bold">Soma Hodgkin-Huxley Kinetics:</span><br/>
+                            
+                            <span class="ml-4">Sodium Conductance (S / cm²):</span><br/>
+                            <input v-model.number="Biophysics.gnabar" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                            
+                            <span class="ml-4">Potassium Conductance (S / cm²):</span><br/>
+                            <input v-model.number="Biophysics.gkbar" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                            
+                            <span class="ml-4">Leak Conductance (S / cm²):</span><br/>
+                            <input v-model.number="Biophysics.gl" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                            
+                            <span class="ml-4">Reversal Potential (mV):</span><br/>
+                            <input v-model.number="Biophysics.el" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                        </div>
 
-                    <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
-                        <span class="font-bold">Dendritic Passive Kinetics:</span><br/>
+                        <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
+                            <span class="font-bold">Dendritic Passive Kinetics:</span><br/>
 
-                        <span class="ml-4">Passive Conductance (S / cm²):</span><br/>
-                        <input v-model.number="Biophysics.g" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
-                        
-                        <span class="ml-4">Leak Reversal Potential (mv):</span><br/>
-                        <input v-model.number="Biophysics.e" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                            <span class="ml-4">Passive Conductance (S / cm²):</span><br/>
+                            <input v-model.number="Biophysics.g" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                            
+                            <span class="ml-4">Leak Reversal Potential (mv):</span><br/>
+                            <input v-model.number="Biophysics.e" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>  
+                        </div>
                     </div>
                     
                 </div>
 
                 <!-- Simulation: -->
-                <div v-if="GUI.ActiveView == 2">
+                <div v-if="GUI.ActiveView == 2" class="h-full grid grid-cols-1">
 
                     <!-- Helper Text:  -->
                     <div class="relative bg-stone-700 rounded-lg m-1 mt-2 p-2 grid">
@@ -170,45 +172,72 @@
                         </div>
                     </div>
 
-                    <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
-                        <span class="font-bold">Stimulation:</span><br/>
-                        <span class="ml-4">Initial Voltage (mV):</span><br/>
-                        <input v-model.number="Simulation.Recording.InitialVoltage" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                    <div class="overflow-y-scroll scrollbar h-full relative">
 
-                        <div class="pl-4 mt-1">
-                            <span>Impulses:</span>
-                            <div class="bg-black rounded-lg my-1 p-1 h-24">
-                                <div class="overflow-y-scroll scrollbar h-full relative">
-                                    <div v-for="(target, index) in Simulation.Stimulation.Targets" class="my-2">
-                                        Target: <input v-model="target.Section" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
-                                        Location: <input v-model="target.Location" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
-                                        Delay: <input v-model="target.Delay" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
-                                        Duration: <input v-model="target.Duration" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
-                                        Amplitude: <input v-model="target.Amplitude" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
+                        <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
+                            <span class="font-bold">Stimulation:</span><br/>
+                            <span class="ml-4">Initial Voltage (mV):</span><br/>
+                            <input v-model.number="Simulation.Recording.InitialVoltage" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+
+                            <div class="pl-4 mt-1 w-full relative">
+                                <span>Impulses:</span>
+                                <i class="absolute right-0 pr-3 mb-1 fa-solid fa-plus cursor-pointer" @click="AddStimulus()"></i>
+
+                                <div class="bg-black rounded-lg my-1 p-1 h-24">
+                                    <div class="overflow-y-scroll scrollbar h-full relative pr-6 pl-1 ">
+                                    
+                                        <div class="my-2 grid grid-cols-5 gap-2">
+                                            <div class="col-span-1 w-full">Section</span></div>
+                                            <div class="col-span-1 w-full">Location</span></div>
+                                            <div class="col-span-1 w-full">Delay</span></div>
+                                            <div class="col-span-1 w-full">Duration</span></div>
+                                            <div class="col-span-1 w-full">Amplitude</span></div>
+                                        </div>
+
+                                        <div v-for="(target, index) in Simulation.Stimulation.Targets" class="my-2 grid grid-cols-5 gap-2">
+                                            <div class="col-span-1 w-full"><input v-model="target.Section" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" /></div>
+                                            <div class="col-span-1 w-full"><input v-model.number="target.Location" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" /></div>
+                                            <div class="col-span-1 w-full"><input v-model.number="target.Delay" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" /></div>
+                                            <div class="col-span-1 w-full"><input v-model.number="target.Duration" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" /></div>
+                                            <div class="col-span-1 w-full"><input v-model.number="target.Amplitude" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" /></div>
+
+                                            <i class="absolute right-0 pr-2 fa-solid fa-trash cursor-pointer my-1" @click="DeletePoint(index)"></i>
+                                        </div>
+                                    
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
-                        <span class="font-bold">Recording:</span><br/>
-                        <span class="ml-4">Simulation Length (ms):</span><br/>
-                        <input v-model.number="Simulation.Recording.Span" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
+                        <div class="bg-stone-800 p-2 mx-1 my-2 rounded text-sm">
+                            <span class="font-bold">Recording:</span><br/>
+                            <span class="ml-4">Simulation Length (ms):</span><br/>
+                            <input v-model.number="Simulation.Recording.Span" type="number" class="text-black px-1 mx-2 ml-8 mt-1 mb-2 w-24" /><br/>
 
-                        <div class="pl-4 mt-1">
-                            <span>Traces:</span>
-                            <div class="bg-black rounded-lg my-1 p-1 h-24">
-                                <div class="overflow-y-scroll scrollbar h-full relative">
-                                    <div v-for="(target, index) in Simulation.Recording.Targets" class="my-2">
-                                        Section: <input v-model="target.Section" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
-                                        Location: <input v-model="target.Location" class="text-black h-5 mr-1 rounded pl-1 w-10 border-white border"/>
+                            <div class="pl-4 mt-1">
+                                <span>Traces:</span>
+                                <i class="absolute right-0 pr-3 mb-1 fa-solid fa-plus cursor-pointer" @click="AddRecording()"></i>
+
+                                <div class="bg-black rounded-lg my-1 p-1 h-24">
+                                    <div class="overflow-y-scroll scrollbar h-full relative pr-12">
+
+                                        <div class="my-2 grid grid-cols-2 gap-2">
+                                            <div class="col-span-1 w-full">Section</span></div>
+                                            <div class="col-span-1 w-full">Location</span></div>
+                                        </div>
+
+                                        <div v-for="(target, index) in Simulation.Recording.Targets" class="my-2 grid grid-cols-2 gap-2">
+                                            <div class="col-span-1 w-full"><input v-model="target.Section" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" /></div>
+                                            <div class="col-span-1 w-full"><input v-model.number="target.Location" class="w-full text-black h-5 mr-1 rounded pl-1 border-white border" type="number" /></div>
+                                            <i class="absolute right-0 pr-2 fa-solid fa-trash cursor-pointer my-1" @click="DeleteRecording(index)"></i>
+                                        </div>
+                                    
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
+                    </div>
                 </div>
 
                 <!-- Visualization:  -->
@@ -228,31 +257,20 @@
                         <div class="px-3 py-1 bg-green-600 hover:bg-green-500 text-white text-sm font-bold rounded cursor-pointer text-center" @click="RenderSimulation()">
                             <i class="fa-solid fa-plus font-normal"></i>&nbsp;Render
                         </div>
+                        {{this.Visualization.Points}}
+                        {{this.Visualization.Data}}
                     </div>
 
                 </div>
 
             </div>
             <canvas id="babylon-canvas" class="h-full bg-black rounded-lg ml-2" style="width: 60%"></canvas>
-            <div id="right-sidebar" class="h-full" style="width: 15%">
-
-                <div class="mx-2 my-2 grid grid-cols-2 gap-2">
-
-                    <div class="col-span-1">
-                        <div v-if="GUI.ActiveView > 0" class="px-3 py-1 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-bold rounded cursor-pointer text-center" @click="PreviousStep()">
-                        <i class="fa-solid fa-plus font-normal"></i>&nbsp;Previous
-                        </div>
-                    </div>
-
-                    <div class="col-span-1">
-                        <div v-if="GUI.ActiveView < 3" class="px-3 py-1 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-bold rounded cursor-pointer text-center" @click="NextStep()">
-                            <i class="fa-solid fa-plus font-normal"></i>&nbsp;Next
-                        </div>
-                    </div>
-
+            <div id="right-sidebar" class="h-full" style="width: 10%">
+                <div class="mx-2 my-2 grid grid-cols-2 gap-1">
+                    <div class="col-span-1"><div v-if="GUI.ActiveView > 0" class="px-3 py-1 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-bold rounded cursor-pointer text-center" @click="PreviousStep()">Prev.</div></div>
+                    <div class="col-span-1"><div v-if="GUI.ActiveView < 3" class="px-3 py-1 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-bold rounded cursor-pointer text-center" @click="NextStep()">Next</div></div>
                 </div>
             </div>
-
         </div>
         
     </div>
